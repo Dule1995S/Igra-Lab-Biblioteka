@@ -5,14 +5,20 @@ import { createClient } from "@/lib/supabase/server";
 async function registracija(formData: FormData) {
   "use server";
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL) redirect("/registracija?greska=1");
+  const f = (k: string) => String(formData.get(k) ?? "").trim();
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
-    email: String(formData.get("email")),
-    password: String(formData.get("password")),
+    email: f("email"),
+    password: String(formData.get("password") ?? ""),
     options: {
       data: {
-        full_name: String(formData.get("full_name")),
-        org_name: String(formData.get("institution")),
+        full_name: f("full_name"),
+        org_name: f("institution"),
+        pib: f("pib"),
+        mb: f("mb"),
+        address: f("address"),
+        jbkjs: f("jbkjs"),
+        requested_seats: f("seats"),
       },
     },
   });
@@ -24,18 +30,36 @@ export default async function Registracija({ searchParams }: PageProps<"/registr
   const { greska } = await searchParams;
   const polje = "rounded-lg border border-black/30 bg-white px-3 py-2";
   return (
-    <main className="mx-auto max-w-md px-4 py-16">
+    <main className="mx-auto max-w-2xl px-4 py-16">
       <h1 className="text-[34px] font-extrabold">Registracija vrtića</h1>
-      <p className="mt-2">Pravite nalog za ceo vrtić. Posle toga sami otvarate naloge vaspitačicama.</p>
+      <p className="mt-2">
+        Pravite jedan nalog za ceo vrtić, a posle sami otvarate naloge vaspitačicama. Pretplatu plaćate po fakturi (eFaktura),
+        a pristup se aktivira kad evidentiramo uplatu.
+      </p>
       {greska && (
         <p role="alert" className="mt-4 font-bold">Registracija nije uspela. Proverite podatke (lozinka najmanje 8 znakova).</p>
       )}
-      <form action={registracija} className="mt-6 flex flex-col gap-4">
-        <label className="flex flex-col gap-1">Ime i prezime (kontakt osoba)
-          <input name="full_name" required className={polje} />
-        </label>
-        <label className="flex flex-col gap-1">Naziv vrtića
+      <form action={registracija} className="mt-6 grid gap-4 sm:grid-cols-2">
+        <label className="flex flex-col gap-1 sm:col-span-2">Naziv vrtića
           <input name="institution" required className={polje} />
+        </label>
+        <label className="flex flex-col gap-1">PIB
+          <input name="pib" required inputMode="numeric" pattern="[0-9]{9}" title="PIB ima 9 cifara" className={polje} />
+        </label>
+        <label className="flex flex-col gap-1">Matični broj
+          <input name="mb" inputMode="numeric" className={polje} />
+        </label>
+        <label className="flex flex-col gap-1 sm:col-span-2">Adresa
+          <input name="address" required className={polje} />
+        </label>
+        <label className="flex flex-col gap-1">JBKJS (za javne vrtiće)
+          <input name="jbkjs" inputMode="numeric" className={polje} />
+        </label>
+        <label className="flex flex-col gap-1">Broj vaspitačica
+          <input name="seats" type="number" min={1} max={500} defaultValue={12} required className={polje} />
+        </label>
+        <label className="flex flex-col gap-1 sm:col-span-2">Ime i prezime (kontakt osoba)
+          <input name="full_name" required className={polje} />
         </label>
         <label className="flex flex-col gap-1">Email
           <input name="email" type="email" required className={polje} />
@@ -43,9 +67,9 @@ export default async function Registracija({ searchParams }: PageProps<"/registr
         <label className="flex flex-col gap-1">Lozinka
           <input name="password" type="password" minLength={8} required className={polje} />
         </label>
-        <button className="btn">Registruj vrtić</button>
+        <div className="sm:col-span-2"><button className="btn">Registruj vrtić</button></div>
       </form>
-      <p className="mt-6"><Link href="/prijava">Već imam nalog</Link></p>
+      <p className="mt-6"><Link href="/prijava">Već imamo nalog</Link></p>
     </main>
   );
 }

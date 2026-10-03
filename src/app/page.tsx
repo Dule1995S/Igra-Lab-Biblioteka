@@ -8,11 +8,12 @@ const AGES = [
 
 const FAQ = [
   { q: "Da li treba nešto da instaliram?", a: "Ne. Biblioteka radi u pregledaču na računaru. Prijavite se na računaru u vrtiću i pokrenite prezentaciju na tabli ili projektoru." },
-  { q: "Koliko vaspitačica može da koristi biblioteku?", a: "Svaka vaspitačica u vrtiću ima svoj nalog. Broj naloga zavisi od pretplate vrtića, na primer 12 za šest grupa sa po dve vaspitačice. Ako vam treba više, javite nam se." },
+  { q: "Koliko vaspitačica može da koristi biblioteku?", a: "Svaka vaspitačica u vrtiću ima svoj nalog. Broj naloga određujemo prema broju vaspitačica u vašem vrtiću, na primer 12 za šest grupa sa po dve vaspitačice. Kasnije ga možemo povećati." },
   { q: "Ko otvara naloge vaspitačicama?", a: "Administrator vrtića, posle prijave, u delu „Moj vrtić“. Vaspitačice se ne registruju same. Prijavljuju se običnim emailom i lozinkom sa bilo kog računara u vrtiću." },
   { q: "Šta vrtić dobija sa pretplatom?", a: "Pristup svih vaspitačica svim knjižicama za uzraste 3, 4, 5 i 6 godina. Uz svaku knjižicu dobijate interaktivnu prezentaciju za vođenje grupe i radni list za štampu." },
   { q: "Kako se koristi prezentacija?", a: "Vi vodite grupu: postavljate pitanja, pokazujete na tabli i otkrivate odgovore na klik. Pitanja za decu su pripremljena uz svaki slajd. Posle toga deca rade zadatke na radnom listu." },
   { q: "Kako štampam radni list?", a: "Radni list se preuzima kao PDF i štampa na papiru A4, najbolje u boji." },
+  { q: "Kako se plaća pretplata?", a: "Po fakturi, preko eFakture. Nema plaćanja na sajtu. Kad uplata stigne, aktiviramo pristup za ceo vrtić." },
   { q: "Šta ako pretplata istekne?", a: "Pristup biblioteci se zatvara za sve naloge vrtića dok se pretplata ne obnovi. Nalozi ostaju sačuvani." },
 ];
 
@@ -64,7 +65,7 @@ export default function Home() {
         <h2 className="text-[32px] font-extrabold md:text-[40px]">Kako radi</h2>
         <ol className="mt-8 grid gap-6 md:grid-cols-3">
           {[
-            { t: "Vrtić pravi nalog", d: "Registrujete vrtić i aktivirate pretplatu. Jedna pretplata otvara sve knjižice za sve vaspitačice." },
+            { t: "Vrtić se registruje", d: "Unesete podatke vrtića i broj vaspitačica. Pretplatu plaćate po fakturi (eFaktura), bez plaćanja na sajtu." },
             { t: "Otvorite naloge vaspitačicama", d: "Svaka vaspitačica dobija svoj email i lozinku, na primer dve za svaku od šest grupa. Naloge otvarate sami, za minut." },
             { t: "Vaspitačice rade u grupi", d: "Svaka se prijavi na računaru na poslu, izabere uzrast i knjižicu, pokrene prezentaciju na tabli i odštampa radni list." },
           ].map((x, i) => (
@@ -110,7 +111,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="text-[32px] font-extrabold md:text-[40px]">Jedna pretplata za ceo vrtić</h2>
           <p className="mt-3 text-[20px]">
-            Pretplata otvara sve knjižice za sve uzraste. Svaka vaspitačica u vrtiću ima svoj login, na primer 12 naloga za šest grupa sa po dve vaspitačice.
+            Pretplata otvara sve knjižice za sve uzraste. Svaka vaspitačica u vrtiću ima svoj login. Broj naloga prilagođavamo broju vaspitačica u vašem vrtiću, na primer 12 za šest grupa sa po dve vaspitačice. Plaćanje je po fakturi (eFaktura).
           </p>
           <p className="mt-4 text-[28px] font-extrabold">{SAJT.cena ?? "Cenu objavljujemo uskoro"}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">

@@ -27,6 +27,12 @@ create table public.organizations (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   seats int not null default 12 check (seats > 0),
+  -- podaci za fakturu (eFaktura / SEF)
+  pib text,
+  mb text,                            -- matični broj
+  address text,
+  jbkjs text,                         -- JBKJS, za vrtiće koji su korisnici javnih sredstava
+  contact_email text,
   created_at timestamptz not null default now()
 );
 
@@ -44,8 +50,8 @@ create index on public.profiles (org_id);
 create table public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   org_id uuid not null references public.organizations(id) on delete cascade,
-  provider text,                      -- procesor plaćanja (još nije izabran)
-  provider_ref text,
+  provider text,                      -- npr. 'efaktura'
+  provider_ref text,                  -- npr. broj fakture
   status text not null default 'inactive',  -- 'active' | 'inactive' | 'canceled'
   current_period_end timestamptz,
   created_at timestamptz not null default now()
@@ -84,7 +90,18 @@ begin
   if new.raw_app_meta_data ? 'org_id' then
     v_org := (new.raw_app_meta_data->>'org_id')::uuid;
   elsif coalesce(new.raw_user_meta_data->>'org_name', '') <> '' then
-    insert into organizations (name) values (new.raw_user_meta_data->>'org_name') returning id into v_org;
+    insert into organizations (name, pib, mb, address, jbkjs, contact_email, seats)
+    values (
+      new.raw_user_meta_data->>'org_name',
+      nullif(new.raw_user_meta_data->>'pib', ''),
+      nullif(new.raw_user_meta_data->>'mb', ''),
+      nullif(new.raw_user_meta_data->>'address', ''),
+      nullif(new.raw_user_meta_data->>'jbkjs', ''),
+      new.email,
+      case when new.raw_user_meta_data->>'requested_seats' ~ '^[0-9]{1,3}$'
+           and (new.raw_user_meta_data->>'requested_seats')::int > 0
+           then (new.raw_user_meta_data->>'requested_seats')::int else 12 end
+    ) returning id into v_org;
     v_role := 'admin';
   end if;
   insert into profiles (id, full_name, org_id, role)
@@ -121,7 +138,5 @@ insert into storage.buckets (id, name, public)
 create policy "storage: citanje za pretplatnike" on storage.objects for select
   using (bucket_id in ('presentations', 'worksheets') and public.has_access(auth.uid()));
 
--- Ručna aktivacija pretplate za vrtić (dok plaćanje nije povezano):
---   insert into subscriptions (org_id, status, current_period_end)
---   values ('<id vrtića>', 'active', now() + interval '1 year');
--- Promena broja naloga:  update organizations set seats = 20 where id = '<id vrtića>';
+-- Plaćanje je po fakturi (eFaktura). Aktivaciju radi administrator Igra Lab na stranici /admin
+-- (profiles.is_admin = true; postaviti ručno:  update profiles set is_admin = true where id = '<id naloga>';).

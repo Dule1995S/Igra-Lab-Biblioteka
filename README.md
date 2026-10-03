@@ -62,5 +62,5 @@ Probna knjižica: `supabase/seed.sql`.
 - `organizations` = vrtić (`seats` = najviše naloga, podrazumevano 12). `profiles.org_id` i `role` (`admin` | `member`). `subscriptions.org_id`: pretplata pripada vrtiću, pristup imaju svi članovi.
 - Registracija (`/registracija`) pravi vrtić i njegov administratorski nalog. Administrator u `/biblioteka/vrtic` otvara i uklanja naloge vaspitačica (server koristi `SUPABASE_SERVICE_ROLE_KEY`, nikad u pregledaču). Proverava se i broj naloga prema `seats`.
 - Bezbednost: `org_id` se čita samo iz `app_metadata` (postavlja ga server). Iz `user_metadata` se ignoriše, inače bi se bilo ko mogao učlaniti u tuđi vrtić. Pravila pristupa (RLS) su proverena probom na Postgresu.
-- Ručna aktivacija pretplate i promena broja naloga: komentari na kraju `supabase/schema.sql`.
+- Plaćanje je po fakturi (eFaktura), bez plaćanja na sajtu. Vrtić pri registraciji unosi PIB, adresu, JBKJS i broj vaspitačica. Administrator Igra Lab (`profiles.is_admin = true`, postavlja se ručno u bazi) na `/admin` aktivira pretplatu kad uplata stigne: broj naloga, datum isteka, broj fakture.
 - Podaci za objavu (naziv firme, PIB, email, cena) idu u `src/lib/sajt.ts`. Pravne stranice su nacrt.

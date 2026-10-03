@@ -14,13 +14,13 @@ export default function Privatnost() {
         <h2>Rukovalac podacima</h2>
         <p>{SAJT.firma.naziv ?? "[naziv firme]"}, {SAJT.firma.adresa ?? "[adresa]"}, PIB {SAJT.firma.pib ?? "[PIB]"}.</p>
         <h2>Koje podatke čuvamo</h2>
-        <p>Pri registraciji vrtića: naziv vrtića, ime i prezime kontakt osobe, email i lozinka. Za svaku vaspitačicu koju vrtić doda: ime i prezime, email i lozinka (lozinka se čuva zaštićeno, ne u čitljivom obliku). Podatke o pretplati: da li je aktivna i do kada. O plaćanju: podatke koje nam prosledi procesor plaćanja, ne brojeve kartica.</p>
+        <p>Pri registraciji vrtića: naziv, PIB, matični broj, adresa i JBKJS vrtića (za izdavanje fakture), ime i prezime kontakt osobe, email i lozinka. Za svaku vaspitačicu koju vrtić doda: ime i prezime, email i lozinka (lozinka se čuva zaštićeno, ne u čitljivom obliku). Podatke o pretplati: da li je aktivna i do kada. Plaćanje je po fakturi, pa ne obrađujemo podatke o karticama.</p>
         <h2>Zašto ih koristimo</h2>
         <p>Da bismo otvorili nalog, omogućili prijavu, proverili da li pretplata daje pristup biblioteci i odgovorili na vaša pitanja. Ne prodajemo podatke.</p>
         <h2>Kolačići</h2>
         <p>Sajt koristi kolačić za prijavu, da biste ostali prijavljeni. Ne koristimo kolačiće za oglašavanje.</p>
         <h2>Ko obrađuje podatke za nas</h2>
-        <p>Usluge skladištenja baze i prijave (Supabase) i hostinga sajta. [Dopuniti: procesor plaćanja i lokacije servera.]</p>
+        <p>Usluge skladištenja baze i prijave (Supabase) i hostinga sajta. [Dopuniti: lokacije servera.]</p>
         <h2>Vaša prava</h2>
         <p>Možete da zatražite uvid, ispravku ili brisanje svojih podataka. Pišite nam na Instagram {SAJT.instagram.rucka}{SAJT.email ? ` ili ${SAJT.email}` : ""}.</p>
       </div>
