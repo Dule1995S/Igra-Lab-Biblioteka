@@ -77,3 +77,7 @@ Probna knjižica: `supabase/seed.sql`.
 - **Zaboravljena lozinka preko emaila:** u Supabase Authentication, pa URL Configuration, postaviti Site URL i dodati `https://<adresa>/auth/callback` u Redirect URLs; podesiti sopstveni SMTP (ugrađeni ima stroga ograničenja); u Vercel postaviti `NEXT_PUBLIC_EMAIL_RESET=1` i uraditi Redeploy.
 - **Rezervne kopije:** Supabase Pro pravi dnevne kopije (7 dana). Na besplatnom planu nema kopija; ručno: Project Settings, pa Database, pa Backups, ili `pg_dump` sa connection string-om.
 - **Predaja administratora:** administrator vrtića postavlja drugu vaspitačicu za administratora u „Moj vrtić"; Igra Lab to može u `/admin`.
+
+### Interaktivne priče za prodavnicu
+
+`prodavnica/prezentacije/`: po jedna samostalna HTML datoteka uz svaku knjižicu (šest igara sa Liskom + ekran za roditelje sa kodom za sledeću knjižicu). Gotovo: `dist/vitezovi-i-zmajevi.html`. Uputstvo za ubacivanje i pravljenje novih: `prodavnica/prezentacije/README.md`.

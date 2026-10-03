@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Samostalne HTML prezentacije za prodavnicu (nisu deo Next.js aplikacije).
+    "prodavnica/**",
   ]),
 ]);
 
