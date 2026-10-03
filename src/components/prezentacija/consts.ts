@@ -9,3 +9,6 @@ export const C = {
 
 export const seq = (names: string[], n: number) =>
   Array.from({ length: n }, (_, i) => names[i % names.length]);
+
+// Osnova putanje do slika. Sajt koristi "/", samostalni pregled postavlja "" (relativno).
+export const asset = (path: string) => `${process.env.NEXT_PUBLIC_ASSET_BASE ?? "/"}${path}`;

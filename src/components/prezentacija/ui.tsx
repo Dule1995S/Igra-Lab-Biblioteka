@@ -2,11 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState, type ReactNode } from "react";
 
-import { C } from "./consts";
+import { C, asset } from "./consts";
 
 export function Sprite({ name, h = 64, className = "" }: { name: string; h?: number; className?: string }) {
   return (
-    <img src={`/sprites/${name}.png`} alt="" draggable={false} style={{ height: h, width: "auto" }}
+    <img src={asset(`sprites/${name}.png`)} alt="" draggable={false} style={{ height: h, width: "auto" }}
       className={`select-none ${className}`} />
   );
 }

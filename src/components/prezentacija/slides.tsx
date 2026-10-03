@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import { useState, type ReactNode } from "react";
-import { C } from "./consts";
+import { C, asset } from "./consts";
 import { Card, SlideTitle, Sprite, TenFrame, frameCells, type Cell } from "./ui";
 
 /* Zajedničko: dugme akcije za vaspitačicu i dugme „otkrij". */
@@ -236,7 +236,7 @@ export function PathSlide({ title, hint }: { title: string; hint: string }) {
                 <button key={n} onClick={() => go(n)} className="relative flex h-[88px] w-[88px] items-center justify-center rounded-full border-4 bg-white text-[40px] font-bold"
                   style={{ borderColor: c, background: n % 5 === 0 ? `${c}33` : "#fff" }}>
                   {shown ? n : "?"}
-                  {pos === n && <img src="/lisko.png" alt="Лиско" className="absolute -top-9 left-1/2 h-14 -translate-x-1/2 drop-shadow" />}
+                  {pos === n && <img src={asset("lisko.png")} alt="Лиско" className="absolute -top-9 left-1/2 h-14 -translate-x-1/2 drop-shadow" />}
                 </button>
               );
             })}
@@ -345,7 +345,7 @@ export function ClapSlide({ title, hint, numbers }: { title: string; hint: strin
       <SlideTitle title={title} hint={hint} />
       <div className="mt-3 flex gap-6 px-12">
         <Card color={C.orange} className="flex w-1/2 flex-col items-center justify-center gap-2 p-4">
-          <img src={done ? "/sprites/scene-highfive.png" : "/sprites/scene-clap.png"} alt="" style={{ height: 290 }} />
+          <img src={done ? asset("sprites/scene-highfive.png") : asset("sprites/scene-clap.png")} alt="" style={{ height: 290 }} />
           <p className="text-[26px] font-bold tracking-widest">{done ? "ДАЈ ПЕТ!" : "ПЉЕСКАМО И БРОЈИМО"}</p>
         </Card>
         <Card color={C.blue} className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
@@ -379,7 +379,7 @@ export function StepsSlide({ title, hint, cards }: { title: string; hint: string
       <SlideTitle title={title} hint={hint} />
       <div className="mt-3 flex gap-6 px-12">
         <Card color={C.orange} className="flex w-[40%] items-center justify-center p-4">
-          <img src="/sprites/scene-steps.png" alt="" style={{ height: 270 }} />
+          <img src={asset("sprites/scene-steps.png")} alt="" style={{ height: 270 }} />
         </Card>
         <Card color={C.blue} className="flex flex-1 flex-col items-center justify-center gap-4 p-4">
           <div className="flex gap-4">
@@ -410,7 +410,7 @@ export function WorksheetSlide({ title, color, pages, tip }: {
   return (
     <div className="flex h-full flex-col px-12 py-8">
       <div className="flex items-center gap-5">
-        <img src="/lisko.png" alt="" style={{ height: 96 }} />
+        <img src={asset("lisko.png")} alt="" style={{ height: 96 }} />
         <div>
           <p className="text-[24px] font-bold tracking-widest" style={{ color }}>САД НА РАДНИ ЛИСТ</p>
           <h2 className="text-[50px] font-extrabold leading-tight" style={{ fontFamily: "var(--font-nunito)" }}>{title}</h2>
@@ -433,12 +433,12 @@ export function WorksheetSlide({ title, color, pages, tip }: {
 export function TitleSlide({ title1, title2, subtitle, age }: { title1: string; title2: string; subtitle: string; age: string }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-      <img src="/logo.png" alt="Igra Lab" style={{ height: 80 }} />
+      <img src={asset("logo.png")} alt="Igra Lab" style={{ height: 80 }} />
       <h1 className="mt-4 text-[84px] font-extrabold leading-none" style={{ color: C.blue, fontFamily: "var(--font-nunito)" }}>{title1}</h1>
       <h1 className="text-[84px] font-extrabold leading-none" style={{ color: C.red, fontFamily: "var(--font-nunito)" }}>{title2}</h1>
       <p className="mt-2 text-[28px] opacity-80">{subtitle}</p>
       <p className="text-[24px] opacity-70">{age}</p>
-      <img src="/sprites/scene-table.png" alt="" style={{ height: 230 }} />
+      <img src={asset("sprites/scene-table.png")} alt="" style={{ height: 230 }} />
     </div>
   );
 }
@@ -455,7 +455,7 @@ export function EndSlide() {
       </div>
       <div className="flex min-h-[80px] gap-2">{Array.from({ length: stars }, (_, i) => <Sprite key={i} name="star" h={stars > 10 ? 44 : 60} />)}</div>
       <p className="text-[24px]">Налепнице и диплома: стране 18 и 19 радног листа.</p>
-      <img src="/logo.png" alt="Igra Lab" style={{ height: 70 }} />
+      <img src={asset("logo.png")} alt="Igra Lab" style={{ height: 70 }} />
     </div>
   );
 }

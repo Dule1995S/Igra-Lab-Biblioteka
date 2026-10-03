@@ -47,15 +47,15 @@ export default function Deck({ slides }: { slides: DeckSlide[] }) {
           <ul className="mt-1 list-disc pl-6">{slides[i].prompts.map((q, n) => <li key={n}>{q}</li>)}</ul>
         </aside>
       )}
-      <nav className="flex items-center justify-between gap-3 px-4 py-3">
+      <nav className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
         <button className="btn !px-5 !py-2" onClick={() => go(-1)} disabled={i === 0} aria-label="Prethodni slajd">←</button>
-        <div className="flex flex-1 flex-wrap items-center justify-center gap-2" aria-label="Slajdovi">
+        <div className="hidden min-w-0 flex-1 flex-wrap items-center justify-center gap-2 md:flex" aria-label="Slajdovi">
           {slides.map((s, n) => (
             <button key={n} onClick={() => setI(n)} title={s.name} aria-label={s.name} aria-current={n === i}
               className="h-3.5 w-3.5 rounded-full border-2" style={{ borderColor: "#e4642b", background: n === i ? "#e4642b" : "transparent" }} />
           ))}
         </div>
-        <span className="hidden text-[15px] sm:block">{i + 1} / {slides.length} · {slides[i].name}</span>
+        <span className="min-w-0 flex-1 text-center text-[15px] md:flex-none">{i + 1} / {slides.length} · {slides[i].name}</span>
         <button className="underline" onClick={() => setAsking((a) => !a)} aria-pressed={asking}>Питања</button>
         <button className="underline" onClick={() => setReset((r) => r + 1)}>Испочетка</button>
         <button className="underline" onClick={full}>Цео екран</button>
