@@ -1,8 +1,16 @@
 # Interaktivne priče uz knjižice (za prodavnicu igralab.rs)
 
-Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (po jedna iz svake celine) sa Liskom, pa ekran „Za roditelja“ sa pregledom šta je dete vežbalo i kodom za sledeću knjižicu. Sve (slike, font, kod) je u jednom fajlu, bez spoljnih zahteva, pa radi na bilo kom hostingu, u iframe-u i na telefonu.
+Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (po jedna iz svake celine) sa Liskom, pa ekran „Za roditelja“ sa pregledom šta je dete vežbalo, stranicama knjižice i kodom za sledeću knjižicu. Sve (slike, font, kod) je u jednom fajlu, bez spoljnih zahteva, pa radi na bilo kom hostingu, u iframe-u i na telefonu. Roditelj čita naglas šta Lisko kaže u oblačiću.
 
-Gotovo: `dist/vitezovi-i-zmajevi.html` (oko 480 KB).
+| Priča (`dist/`) | Knjižica | Šest igara | Sledeća knjižica | Kod |
+|---|---|---|---|---|
+| `vitezovi-i-zmajevi.html` | Витезови и змајеви | šta ne pripada, šta je veće, senka, zmajev trag, mreža blaga, štit | Динозауруси | `ВИТЕЗ20` |
+| `dinosaurusi.html` | Диносауруси | čija je senka, jaja po veličini, biljke ili meso, nebo/voda/kopno, iskopaj fosil, let do gnezda | Животиње света | `ДИНО20` |
+| `zivotinje-sveta.html` | Животиње света | šta ne pripada, danju ili noću, nađi istu, izdaleka ili izbliza, bubamara, šta je veće | Чувам природу | `ЗВЕРКЕ20` |
+| `cuvam-prirodu.html` | Чувам природу | šta nije otpad, tri kante, gde stane više vode, šta od čega može, od kore do cveta, drvo | Србија | `ПРИРОДА20` |
+| `srbija.html` | Србија | koje parče fali (mapa), reka teče, planine po veličini, šta je veće, gde šta raste, moja nošnja | Витезови и змајеви | `СРБИЈА20` |
+
+Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
 
 ## Ubacivanje na sajt
 
@@ -25,39 +33,50 @@ Najjednostavnije: otpremite `dist/<naziv>.html` na bilo koji statički hosting (
 ```bash
 cd prodavnica/prezentacije
 node build.mjs                       # sve priče
-node build.mjs vitezovi-i-zmajevi    # jedna priča
+node build.mjs srbija                # jedna priča
 ```
 
 Potreban je samo Node 18+. Izlaz je u `dist/`.
 
 ## Podešavanje (stories/<naziv>/story.mjs)
 
-- `next.url`: adresa prodavnice za dugme „Pogledaj u prodavnici“ (podrazumevano `https://igralab.rs`; stavite tačnu stranicu sledeće knjižice).
-- `next.code` / `next.codeText`: kod za popust, preuzet sa poslednje strane knjižice (`ВИТЕЗ20`).
-- Tekstovi, činjenice i uputstva u oblačiću Liska su u istom fajlu. Činjenice su iz same knjižice, a uz svaku celinu je navedena strana (`page`).
+- `next.url`: adresa prodavnice za dugme „Pogledaj u prodavnici“ (podrazumevano `https://igralab.rs`, zajedničko u `stories/_shared.mjs`; stavite tačnu stranicu sledeće knjižice).
+- `next.code` / `next.codeText`: kod za popust, preuzet sa poslednje strane knjižice.
+- Tekstovi, činjenice i uputstva u oblačiću Liska su u istom fajlu.
 
 ## Nova priča (sledeće knjižice)
 
-1. Napraviti `stories/<naziv>/` sa `story.mjs` (kopirati Vitezove) i `assets/`.
-2. Slike izvući iz PDF-a: videti `stories/vitezovi-i-zmajevi/extract-assets.sh` (potrebni su `poppler-utils` i `imagemagick`; PDF-ovi nisu u repozitorijumu). Skripta iseca ikone iz radnog lista i briše belu pozadinu.
+1. Napraviti `stories/<naziv>/` sa `story.mjs` (kopirati neku postojeću) i `assets/`.
+2. Slike izvući iz PDF-a. Potrebni su `poppler-utils` i `imagemagick`; PDF-ovi nisu u repozitorijumu.
+   - `tools/segment.sh knjizica.pdf <strana> <folder>` pronađe pojedinačne crteže na strani i numeriše ih na slici `seg-p<strana>.png`.
+   - `tools/cut.sh knjizica.pdf <strana> <folder> ime=broj ...` iseče izabrane crteže u providni PNG (može i `ime=broj:uvlačenje`, ručni okvir `ime=@x,y,w,h` i `~flop` da se polovina spoji sa ogledalom).
+   - `tools/cover.sh` iseče ilustraciju sa naslovne strane.
+   - Primeri celih postupaka su `stories/*/extract-assets.sh`.
 3. Za svaku celinu izabrati vrstu igre i popuniti podatke.
+4. `node build.mjs <naziv>`, pa proba: `node tools/playthrough.mjs <naziv>` odigra celu priču u pregledaču (Chromium + Playwright), snimi ekrane u `shots/<naziv>` i prijavi greške i spoljne zahteve.
 
 Vrste igara u `engine/engine.js` (`GAMES`):
 
-| `type` | Šta dete radi | Primer |
-|---|---|---|
-| `odd` | Dodirne ono što ne pripada | Замак |
-| `bigger` | Dodirne šta je u stvarnosti veće | Витез |
-| `shadow` | Vuče izvor svetla, vidi kako se menja senka | Ноћ у замку |
-| `trace` | Prstom prati liniju od starta do cilja | Змај |
-| `grid` | Dopunjuje mrežu (ista stvar jednom u redu i koloni) | Благо |
-| `shield` | Slaže svoj znak: boja i tačno pet znakova | Турнир |
+| `type` | Šta dete radi |
+|---|---|
+| `odd` | Dodirne ono što ne pripada redu |
+| `bigger` | Dodirne šta je u stvarnosti veće |
+| `choose` | Bira odgovor uz model (običan ili silueta, npr. „čija je ovo senka“, „nađi istu“) |
+| `sort` | Razvrstava stvar po stvar u 2 do 4 korpe |
+| `order` | Dodiruje redom (od najmanjeg do najvećeg, od prvog do poslednjeg) |
+| `grid` | Dopunjuje mrežu (ista stvar jednom u redu i koloni) |
+| `trace` | Prstom prati liniju od starta do cilja |
+| `dig` | Prstom skida zemlju i otkriva šta je ispod |
+| `shadow` | Vuče izvor svetla i gleda kako se menja senka |
+| `stickers` | Slaže svoj znak: boja (neobavezno) i tačno toliko znakova koliko ima mesta (štit, drvo, nošnja, bubamara) |
 
 Nova vrsta igre je jedna funkcija u `GAMES` koja dobija `(root, podaci, ctx, indeks)`. `ctx.say`, `ctx.next`, `ctx.finish` i `ctx.burst` upravljaju oblačićem, dugmetom „Даље“, završetkom koraka i konfetama.
 
 ## Sadržaj foldera
 
 - `engine/`: pokretač (`engine.js`, `engine.css`, `template.html`), font Nunito (ćirilica + latinica) i Lisko/logo.
-- `stories/`: sadržaj po knjižici.
+- `stories/`: sadržaj po knjižici (`_shared.mjs` je zajedničko).
+- `covers/`: naslovne ilustracije svih knjižica (za karticu „Sledeća avantura“).
+- `tools/`: alati za izvlačenje slika iz PDF-a i automatska proba.
 - `build.mjs`: spaja sve u jedan HTML.
 - `dist/`: gotove datoteke za sajt.
