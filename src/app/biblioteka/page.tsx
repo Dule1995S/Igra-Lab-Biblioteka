@@ -28,6 +28,7 @@ export default async function Biblioteka() {
         <h1 className="text-[34px] md:text-[44px] font-extrabold">Moja biblioteka</h1>
         <div className="flex items-center gap-5">
           {me?.is_admin && <Link href="/admin">Administracija</Link>}
+          <Link href="/biblioteka/nalog">Moj nalog</Link>
           {me?.role === "admin" && <Link href="/biblioteka/vrtic">Moj vrtić</Link>}
           <form action={odjava}><button className="underline">Odjava</button></form>
         </div>

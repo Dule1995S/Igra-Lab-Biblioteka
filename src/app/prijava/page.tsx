@@ -31,7 +31,8 @@ export default async function Prijava({ searchParams }: PageProps<"/prijava">) {
         </label>
         <button className="btn">Prijavi se</button>
       </form>
-      <p className="mt-6"><Link href="/registracija">Nemam nalog</Link></p>
+      <p className="mt-6"><Link href="/registracija">Registrujte vrtić</Link></p>
+      <p className="mt-2 text-[16px] opacity-80">Zaboravili ste lozinku? Obratite se administratoru vašeg vrtića, on vam postavlja novu.</p>
     </main>
   );
 }

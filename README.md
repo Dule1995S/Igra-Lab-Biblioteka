@@ -64,3 +64,9 @@ Probna knjižica: `supabase/seed.sql`.
 - Bezbednost: `org_id` se čita samo iz `app_metadata` (postavlja ga server). Iz `user_metadata` se ignoriše, inače bi se bilo ko mogao učlaniti u tuđi vrtić. Pravila pristupa (RLS) su proverena probom na Postgresu.
 - Plaćanje je po fakturi (eFaktura), bez plaćanja na sajtu. Vrtić pri registraciji unosi PIB, adresu, JBKJS i broj vaspitačica. Administrator Igra Lab (`profiles.is_admin = true`, postavlja se ručno u bazi) na `/admin` aktivira pretplatu kad uplata stigne: broj naloga, datum isteka, broj fakture.
 - Podaci za objavu (naziv firme, PIB, email, cena) idu u `src/lib/sajt.ts`. Pravne stranice su nacrt.
+
+### Prijava, nalog i preuzimanja
+
+- Lozinke: administrator vrtića postavlja novu lozinku vaspitačici u `/biblioteka/vrtic`; administrator Igra Lab postavlja lozinku administratoru vrtića u `/admin`; svako menja svoju u `/biblioteka/nalog`. (Zaboravljena lozinka preko emaila nije uključena, jer traži podešen email servis.)
+- Preuzimanje radnog lista ide kroz `/biblioteka/preuzmi/<id>`: provera pristupa, evidencija u tabeli `downloads` i link koji važi minut. Broj preuzimanja po vrtiću se vidi u `/admin`.
+- Baza koja je već napravljena dobija novu tabelu pokretanjem `supabase/migrations/002_preuzimanja.sql`. Nova podešavanja koriste `supabase/setup.sql`.

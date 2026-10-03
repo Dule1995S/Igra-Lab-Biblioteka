@@ -20,7 +20,7 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
 
   const { data: worksheets } = await supabase
     .from("worksheets")
-    .select("id,title,file_path")
+    .select("id,title")
     .eq("booklet_id", booklet.id)
     .order("sort_order");
 
@@ -31,9 +31,7 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
   const presentationUrl = booklet.presentation_path
     ? await sign("presentations", booklet.presentation_path)
     : undefined;
-  const sheets = await Promise.all(
-    (worksheets ?? []).map(async (w) => ({ ...w, url: await sign("worksheets", w.file_path) })),
-  );
+  const sheets = worksheets ?? [];
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
@@ -57,7 +55,7 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
         {sheets.map((w) => (
           <li key={w.id} className="flex items-center justify-between gap-4 rounded-xl bg-white p-4">
             <span className="font-bold">{w.title}</span>
-            {w.url && <a href={w.url} download className="btn">Preuzmi</a>}
+            <a href={`/biblioteka/preuzmi/${w.id}`} className="btn">Preuzmi</a>
           </li>
         ))}
         {sheets.length === 0 && <li>Radni listovi uskoro.</li>}

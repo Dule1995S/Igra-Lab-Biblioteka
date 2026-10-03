@@ -39,6 +39,17 @@ async function aktiviraj(formData: FormData) {
   revalidatePath("/admin");
 }
 
+async function novaLozinkaAdminu(formData: FormData) {
+  "use server";
+  await trazIgraLab();
+  const id = String(formData.get("id"));
+  const lozinka = String(formData.get("password") ?? "");
+  if (!id || lozinka.length < 8) redirect("/admin?greska=lozinka");
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(id, { password: lozinka });
+  redirect(error ? "/admin?greska=lozinka" : "/admin?lozinka=1");
+}
+
 async function iskljuci(formData: FormData) {
   "use server";
   await trazIgraLab();
@@ -48,14 +59,19 @@ async function iskljuci(formData: FormData) {
 }
 
 export default async function Administracija({ searchParams }: PageProps<"/admin">) {
-  const { greska } = await searchParams;
+  const { greska, lozinka } = await searchParams;
   await trazIgraLab();
   const admin = createAdminClient();
-  const [{ data: orgs }, { data: subs }, { data: profs }] = await Promise.all([
+  const [{ data: orgs }, { data: subs }, { data: profs }, { data: preuzimanja }, { data: korisnici }] = await Promise.all([
     admin.from("organizations").select("*").order("created_at", { ascending: false }),
     admin.from("subscriptions").select("org_id,status,current_period_end,provider_ref"),
-    admin.from("profiles").select("org_id"),
+    admin.from("profiles").select("id,org_id,role"),
+    admin.from("downloads").select("org_id"),
+    admin.auth.admin.listUsers({ perPage: 1000 }).then((r) => ({ data: r.data?.users ?? [] })),
   ]);
+  const email = (id: string) => korisnici?.find((u) => u.id === id)?.email ?? "-";
+  const preuzeto = (id: string) => preuzimanja?.filter((d) => d.org_id === id).length ?? 0;
+  const adminiVrtica = (id: string) => profs?.filter((p) => p.org_id === id && p.role === "admin") ?? [];
   const aktivna = (id: string) =>
     subs?.find((s) => s.org_id === id && s.status === "active" && (!s.current_period_end || new Date(s.current_period_end) > new Date()));
   const clanova = (id: string) => profs?.filter((p) => p.org_id === id).length ?? 0;
@@ -66,7 +82,8 @@ export default async function Administracija({ searchParams }: PageProps<"/admin
     <main className="mx-auto max-w-5xl px-4 py-12">
       <h1 className="text-[34px] md:text-[44px] font-extrabold">Administracija</h1>
       <p className="mt-2">Vrtići i pretplate. Aktivirajte vrtić kad uplata po fakturi stigne.</p>
-      {greska && <p role="alert" className="mt-4 font-bold">Proverite datum i podatke.</p>}
+      {greska && <p role="alert" className="mt-4 font-bold">Proverite podatke (lozinka najmanje 8 znakova, ispravan datum).</p>}
+      {lozinka && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Lozinka je postavljena.</p>}
 
       <ul className="mt-8 flex flex-col gap-5">
         {orgs?.map((o) => {
@@ -82,7 +99,7 @@ export default async function Administracija({ searchParams }: PageProps<"/admin
               <p className="mt-1 text-[16px]">
                 PIB {o.pib ?? "-"} · MB {o.mb ?? "-"} · JBKJS {o.jbkjs ?? "-"} · {o.address ?? "-"} · {o.contact_email ?? "-"}
               </p>
-              <p className="text-[16px]">Nalozi: {clanova(o.id)} od {o.seats}{a?.provider_ref ? ` · faktura ${a.provider_ref}` : ""}</p>
+              <p className="text-[16px]">Nalozi: {clanova(o.id)} od {o.seats} · preuzimanja radnih listova: {preuzeto(o.id)}{a?.provider_ref ? ` · faktura ${a.provider_ref}` : ""}</p>
               <form action={aktiviraj} className="mt-3 flex flex-wrap items-end gap-3">
                 <input type="hidden" name="org" value={o.id} />
                 <label className="flex flex-col text-[15px]">Broj naloga<input name="seats" type="number" min={1} max={500} defaultValue={o.seats} className={`${polje} w-28`} /></label>
@@ -90,6 +107,14 @@ export default async function Administracija({ searchParams }: PageProps<"/admin
                 <label className="flex flex-col text-[15px]">Broj fakture<input name="faktura" className={`${polje} w-40`} /></label>
                 <button className="btn !px-5 !py-2 !text-[17px]">{a ? "Produži / izmeni" : "Aktiviraj"}</button>
               </form>
+              {adminiVrtica(o.id).map((ad) => (
+                <form key={ad.id} action={novaLozinkaAdminu} className="mt-3 flex flex-wrap items-center gap-2 text-[16px]">
+                  <input type="hidden" name="id" value={ad.id} />
+                  <span>Administrator vrtića: {email(ad.id)}</span>
+                  <input name="password" type="text" minLength={8} required autoComplete="off" placeholder="Nova lozinka" aria-label={`Nova lozinka za ${email(ad.id)}`} className="w-40 rounded-lg border border-black/30 bg-white px-3 py-1" />
+                  <button className="underline">Postavi lozinku</button>
+                </form>
+              ))}
               {a && <form action={iskljuci} className="mt-2"><input type="hidden" name="org" value={o.id} /><button className="underline">Isključi pretplatu</button></form>}
             </li>
           );
