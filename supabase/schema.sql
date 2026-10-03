@@ -4,9 +4,10 @@ create table public.booklets (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   title text not null,
-  age_group text not null,            -- npr. '3', '4-5', '5-6', '6-7'
+  age_group text not null check (age_group in ('3', '4', '5', '6')),  -- uzrast u godinama
   description text,
-  presentation_path text,             -- putanja u storage bucketu 'presentations'
+  deck text,                          -- ključ interaktivne prezentacije (src/content/index.ts)
+  presentation_path text,             -- opciono: PDF prezentacija u bucketu 'presentations'
   published boolean not null default false,
   sort_order int not null default 0,
   created_at timestamptz not null default now()

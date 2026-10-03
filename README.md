@@ -50,3 +50,9 @@ B2B sajt za vaspitačice: prijava, pa biblioteka sa prezentacijom i radnim listo
 - Prezentacija je skup slajdova u podacima: `src/content/<knjizica>.tsx`. Prikazivač je `src/components/prezentacija/Deck.tsx`, vrste slajdova su u `slides.tsx`.
 - Probni primer: `/demo/brojevi-do-20` (privremeno javno, radni list za preuzimanje je u `sadrzaj/`). Pre objave prebaciti iza prijave.
 - Slike su izdvojene iz PDF-a radnog lista u `public/sprites/` (isto važi za sledeće knjižice).
+
+### Struktura biblioteke
+
+`/biblioteka` (uzrasti 3, 4, 5, 6) → `/biblioteka/uzrast/<uzrast>` (knjižice) → `/biblioteka/<slug>` (interaktivna prezentacija + radni listovi).
+Jedna aktivna pretplata otvara sve. Nova knjižica: red u `booklets` (kolona `deck` = ključ iz `src/content/index.ts`), PDF radnog lista u bucket `worksheets`.
+Probna knjižica: `supabase/seed.sql`.

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Deck from "@/components/prezentacija/Deck";
-import { slides } from "@/content/brojevi-do-20";
+import { decks } from "@/content";
 
 // PRIVREMENI javni demo za pregled. Pre objave prebaciti iza prijave (/biblioteka/[slug]).
 export default function Demo() {
@@ -13,7 +13,7 @@ export default function Demo() {
       </div>
       <p className="mt-1">Прегледај интерактивну презентацију, па преузми радни лист за штампу.</p>
       <div className="mt-4" style={{ height: "max(560px, calc(100vh - 220px))" }}>
-        <Deck slides={slides} />
+        <Deck slides={decks["brojevi-i-kolicine-do-20"]} />
       </div>
     </main>
   );

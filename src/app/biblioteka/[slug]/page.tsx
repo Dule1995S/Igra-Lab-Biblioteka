@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import Deck from "@/components/prezentacija/Deck";
+import { decks } from "@/content";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]">) {
@@ -11,7 +13,7 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
   // RLS vraća red samo korisniku sa aktivnim pristupom.
   const { data: booklet } = await supabase
     .from("booklets")
-    .select("id,title,age_group,description,presentation_path")
+    .select("id,title,age_group,description,deck,presentation_path")
     .eq("slug", slug)
     .maybeSingle();
   if (!booklet) notFound();
@@ -25,6 +27,7 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
   const sign = async (bucket: string, path: string) =>
     (await supabase.storage.from(bucket).createSignedUrl(path, 3600)).data?.signedUrl;
 
+  const slides = booklet.deck ? decks[booklet.deck] : undefined;
   const presentationUrl = booklet.presentation_path
     ? await sign("presentations", booklet.presentation_path)
     : undefined;
@@ -34,13 +37,15 @@ export default async function Knjizica({ params }: PageProps<"/biblioteka/[slug]
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
-      <Link href="/biblioteka">← Nazad u biblioteku</Link>
+      <Link href={`/biblioteka/uzrast/${booklet.age_group}`}>← Uzrast {booklet.age_group}</Link>
       <h1 className="mt-4 text-[34px] md:text-[44px] font-extrabold">{booklet.title}</h1>
       <p className="font-bold text-brand-cool">Uzrast: {booklet.age_group}</p>
       {booklet.description && <p className="mt-2">{booklet.description}</p>}
 
       <h2 className="mt-10 text-[32px] font-bold">Prezentacija</h2>
-      {presentationUrl ? (
+      {slides ? (
+        <div className="mt-4" style={{ height: "max(560px, calc(100vh - 220px))" }}><Deck slides={slides} /></div>
+      ) : presentationUrl ? (
         <iframe src={presentationUrl} title={`Prezentacija: ${booklet.title}`}
           className="mt-4 h-[70vh] w-full rounded-2xl border border-black/20 bg-white" />
       ) : (
