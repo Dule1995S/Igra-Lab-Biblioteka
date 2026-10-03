@@ -1,59 +1,76 @@
 import type { ReactNode } from "react";
 import {
-  ClapSlide, CompareSlide, CountSlide, EndSlide, Fill10Slide, HuntSlide, LessMoreSlide, Match20Slide,
-  MatchCountSlide, MissingSlide, MyNumberSlide, ShareSlide, StepsSlide, TenPlusSlide, TitleSlide, TwoColorsSlide,
+  BuildSlide, ClapSlide, EndSlide, LessMoreSlide, PairSlide, PathSlide, RulesSlide, ShareSlide, StepsSlide,
+  TenFrameSlide, TenPlusSlide, TitleSlide, WorksheetSlide,
 } from "@/components/prezentacija/slides";
 import { C, seq } from "@/components/prezentacija/consts";
 
-// Slajdovi prate redosled radnog lista „Бројеви и количине до 20“ (str. 4–17).
-export const slides: { name: string; node: ReactNode }[] = [
-  { name: "Наслов", node: <TitleSlide title1="БРОЈЕВИ И КОЛИЧИНЕ" title2="ДО 20" subtitle="додирни, преброј, повежи" age="за узраст 5 година" /> },
-  { name: "Колико их има?", node: <CountSlide title="КОЛИКО ИХ ИМА?" hint="Преброј сваки скуп. Додирни број који показује колико их има." items={[
-    { sprites: seq(["apple"], 4), options: [3, 4, 5], answer: 4 },
-    { sprites: seq(["fish"], 6), options: [6, 7, 5], answer: 6 },
-    { sprites: seq(["star"], 3), options: [2, 4, 3], answer: 3 },
-    { sprites: seq(["ladybug"], 7), options: [8, 7, 6], answer: 7 },
-    { sprites: seq(["strawberry"], 5), options: [5, 6, 4], answer: 5 },
-    { sprites: seq(["leaf"], 8), options: [7, 9, 8], answer: 8 },
-  ]} /> },
-  { name: "Повежи број и скуп", node: <MatchCountSlide title="ПОВЕЖИ БРОЈ И СКУП" hint="Изабери број, па скуп са толико предмета." rows={[
-    { n: 6, sprites: seq(["balloon-red", "balloon-yellow", "balloon-blue", "balloon-green", "balloon-red", "balloon-yellow"], 6) },
-    { n: 7, sprites: seq(["gift-red", "gift-blue", "gift-yellow", "gift-green"], 7) },
-    { n: 8, sprites: seq(["car-red", "car-yellow", "car-blue", "car-green"], 8) },
-    { n: 9, sprites: seq(["button-red", "button-yellow", "button-blue", "button-green"], 9) },
-    { n: 10, sprites: seq(["boat-red", "boat-blue", "boat-yellow", "boat-green"], 10) },
-  ]} /> },
-  { name: "Попуни до 10", node: <Fill10Slide title="ПОПУНИ ДО 10" hint="Додирни празна поља да их попуниш. Изабери колико их је још требало." rows={[
-    { have: 8, options: [1, 2, 3] }, { have: 6, options: [4, 3, 5] }, { have: 9, options: [3, 2, 1] }, { have: 7, options: [2, 3, 4] },
-  ]} /> },
-  { name: "Где има више?", node: <CompareSlide title="ГДЕ ИМА ВИШЕ?" hint="Преброј оба скупа. Додирни већи скуп. Ако их је исто, додирни оба." pairs={[
-    { left: seq(["car-red", "car-yellow", "car-blue", "car-green"], 7), right: seq(["car-red", "car-yellow", "car-blue", "car-green"], 5) },
-    { left: seq(["balloon-red", "balloon-yellow", "balloon-blue", "balloon-green"], 6), right: seq(["balloon-red", "balloon-yellow", "balloon-blue", "balloon-green"], 8) },
-    { left: seq(["shell"], 9), right: seq(["kite-red", "kite-yellow", "kite-blue", "kite-green"], 9) },
-  ]} /> },
-  { name: "Који број недостаје?", node: <MissingSlide title="КОЈИ БРОЈ НЕДОСТАЈЕ?" hint="Изговори ред наглас. Додирни број који иде на празно место." rows={[
-    { seq: [1, 2, null, 4, 5], options: [3, 6, 2], answer: 3, color: C.red },
-    { seq: [5, 6, null, 8, 9], options: [4, 10, 7], answer: 7, color: C.red },
-    { seq: [11, 12, 13, null, 15], options: [16, 14, 10], answer: 14, color: C.blue },
-    { seq: [16, 17, 18, 19, null], options: [20, 11, 10], answer: 20, color: C.blue },
-  ]} /> },
-  { name: "Десет и још", node: <TenPlusSlide title="ДЕСЕТ И ЈОШ" hint="Пуна десетица и још неколико. Колико их има укупно?" exampleRed={3} rows={[
-    { red: 2, options: [12, 13, 11] }, { red: 5, options: [14, 16, 15] }, { red: 1, options: [12, 11, 13] },
-  ]} /> },
-  { name: "Повежи до 20", node: <Match20Slide title="ПОВЕЖИ ДО 20" hint="Изабери број, па два оквира са толико тачака." rows={[
-    { n: 12, red: 2 }, { n: 15, red: 5 }, { n: 17, red: 7 }, { n: 20, red: 10 },
-  ]} /> },
-  { name: "Бројчани лов", node: <HuntSlide title="БРОЈЧАНИ ЛОВ" hint="Преброј рибе, шкољке и звезде у мору. Додирни оно што си пребројао." /> },
-  { name: "Две боје, укупно 10", node: <TwoColorsSlide title="ДВЕ БОЈЕ, УКУПНО 10" hint="Обој десет поља двема бојама, свако поље једном." /> },
-  { name: "Распореди по једнако", node: <ShareSlide title="РАСПОРЕДИ ПО ЈЕДНАКО" hint="Додирни дугме, па корпу. У свакој корпи треба да буде исто."
-    items={seq(["button-red", "button-yellow", "button-blue", "button-green", "button-red", "button-blue"], 6).concat(seq(["button-red", "button-yellow", "button-blue", "button-green", "button-red", "button-blue"], 6))}
-    perBasket={4} options={[3, 4, 5]} /> },
-  { name: "Мање или више од 10?", node: <LessMoreSlide title="МАЊЕ ИЛИ ВИШЕ ОД 10?" hint="Преброј скуп. Додирни МАЊЕ ако их је мање од 10, а ВИШЕ ако их је више." items={[
-    { sprite: "acorn", n: 8 }, { sprite: "strawberry", n: 13 }, { sprite: "flower-red", n: 11 },
-    { sprite: "leaf", n: 6 }, { sprite: "ladybug", n: 14 }, { sprite: "cube", n: 9 },
-  ]} /> },
-  { name: "Мој број", node: <MyNumberSlide title="МОЈ БРОЈ" hint="Изабери број од 11 до 20. Погледај га у оквирима." /> },
-  { name: "Пљесни и преброј", node: <ClapSlide title="ПЉЕСНИ И ПРЕБРОЈ" hint="Одрасли покаже број, а ти толико пута пљеснеш. Па дај пет!" numbers={[2, 4, 6, 8, 10]} /> },
-  { name: "Десет корака и још", node: <StepsSlide title="ДЕСЕТ КОРАКА И ЈОШ" hint="Направи 10 корака, па још толико колико пише на картици." cards={[1, 3, 5]} /> },
-  { name: "Крај", node: <EndSlide /> },
+export type DeckSlide = { name: string; node: ReactNode; prompts: string[] };
+
+const cars = ["car-red", "car-yellow", "car-blue", "car-green"];
+const balloons = ["balloon-red", "balloon-yellow", "balloon-blue", "balloon-green"];
+const kites = ["kite-red", "kite-yellow", "kite-blue", "kite-green"];
+const buttons = ["button-red", "button-yellow", "button-blue", "button-green", "button-red", "button-blue"];
+
+// Презентација води васпитачица. Деца раде задатке на радном листу „Бројеви и количине до 20“.
+export const slides: DeckSlide[] = [
+  { name: "Наслов", prompts: ["Данас са Лиском учимо да бројимо до 20.", "Шта знате о бројевима? До колико већ умете да бројите?"],
+    node: <TitleSlide title1="БРОЈЕВИ И КОЛИЧИНЕ" title2="ДО 20" subtitle="додирни, преброј, повежи" age="за узраст 5 година" /> },
+
+  // 1. Бројимо до 10 (радни лист, стране 4–8)
+  { name: "Како бројимо?", prompts: ["Како бројимо да не погрешимо? Покажите ми.", "Који број изговарамо последњи? Шта он каже?", "Шта се догоди ако пребројимо другим редом? Да ли је исти број?", "Ако дете прескочи предмет, мирно почните поново."],
+    node: <RulesSlide title="КАКО БРОЈИМО?" hint="Додирни, помери, реци број, провери." sprite="apple" n={5} /> },
+  { name: "Колико их има?", prompts: ["Колико их видиш? Хајде да их избројимо заједно.", "Да ли бисмо добили исти број да су другачије боје или врсте?", "Који је био последњи број? Шта нам он каже?"],
+    node: <BuildSlide title="КОЛИКО ИХ ИМА?" hint="Додајемо један по један и бројимо." rounds={[
+      { sprite: "ladybug", n: 5 }, { sprite: "fish", n: 8 }, { sprite: "strawberry", n: 6 }, { sprite: "star", n: 10 },
+    ]} /> },
+  { name: "Где има више?", prompts: ["Где има више? Како знаш?", "Шта значи кад свака ствар има свој пар?", "Шта остане без пара? Шта нам то каже?", "Када је исто? Како то видимо?"],
+    node: <PairSlide title="ГДЕ ИМА ВИШЕ?" hint="Упарујемо један на један." rounds={[
+      { a: seq(cars, 5), b: seq(balloons, 5) },
+      { a: seq(cars, 7), b: seq(balloons, 5) },
+      { a: seq(["shell"], 6), b: seq(kites, 8) },
+    ]} /> },
+  { name: "Оквир од десет", prompts: ["Колико поља има оквир? Колико у сваком реду?", "Колико кругова сад видиш? Колико празних поља је остало?", "Колико још недостаје до 10?", "Кад су сва поља пуна, шта имамо?"],
+    node: <TenFrameSlide title="ОКВИР ОД ДЕСЕТ" hint="Два реда по пет поља. Пуна десетица има десет." /> },
+  { name: "На радни лист: бројимо до 10", prompts: ["Подсетите: прво бројимо, па заокружимо.", "Изаберите једну до три стране дневно."],
+    node: <WorksheetSlide title="Бројимо до 10" color={C.red} pages={[
+      { p: "4", t: "Колико их има?", d: "Преброј сваки скуп, заокружи број." },
+      { p: "5", t: "Повежи број и скуп", d: "Повуци линију од броја до скупа." },
+      { p: "6", t: "Попуни до 10", d: "Нацртај тачке у празна поља." },
+      { p: "7–8", t: "Где има више? Који број недостаје?", d: "Упореди скупове и допуни низ." },
+    ]} tip="Дете додирује сваки предмет прстом, слева надесно. Последњи изговорени број је одговор." /> },
+
+  // 2. Десет и још (стране 9–12)
+  { name: "Десет и још", prompts: ["Колико има у првом оквиру? Да ли је пун?", "Шта ми додајемо после десет? Бројимо даље: једанаест, дванаест…", "Како можемо рећи за 13? (10 и још 3)", "Где је пуна десетица?"],
+    node: <TenPlusSlide title="ДЕСЕТ И ЈОШ" hint="Пуна десетица и још неколико." /> },
+  { name: "Бројевна стаза", prompts: ["Који број долази после 14? Пре 17?", "Покажи Лиска где је број 12.", "Који број долази на празно место?", "Колико је од 10 до 15?"],
+    node: <PathSlide title="БРОЈЕВНА СТАЗА" hint="Лиско иде од 1 до 20." /> },
+  { name: "На радни лист: десет и још", prompts: ["Подсетите: прво покажемо пуну десетицу и кажемо „десет“.", "Затим бројимо даље: једанаест, дванаест, тринаест."],
+    node: <WorksheetSlide title="Десет и још" color={C.blue} pages={[
+      { p: "9", t: "Десет и још", d: "Пуна десетица и још неколико, колико укупно?" },
+      { p: "10", t: "Повежи до 20", d: "Повежи број са два оквира." },
+      { p: "11", t: "Бројчани лов", d: "Преброј рибе, шкољке и звезде." },
+      { p: "12", t: "Две боје, укупно 10", d: "Обој десет поља на свој начин." },
+    ]} tip="Свака подела на две боје је тачна ако су сва поља обојена. Дете бира своју поделу." /> },
+
+  // 3. Делимо и поредимо (стране 13–15)
+  { name: "Мање или више од 10?", prompts: ["Колико их има? Да ли ће стати у оквир?", "Има ли празних поља? Значи ли то мање од 10?", "Шта ми остаје ван оквира? Значи ли то више од 10?"],
+    node: <LessMoreSlide title="МАЊЕ ИЛИ ВИШЕ ОД 10?" hint="Распоредимо у десетицу, па видимо." rounds={[
+      { sprite: "acorn", n: 8 }, { sprite: "strawberry", n: 13 }, { sprite: "leaf", n: 6 }, { sprite: "ladybug", n: 14 }, { sprite: "cube", n: 9 },
+    ]} /> },
+  { name: "Делимо једнако", prompts: ["Како делимо да сви добију исто? (једно по једно, редом)", "Колико има у свакој корпи? Да ли је свуда исто?", "Шта ако имамо више корпи? Шта се промени?"],
+    node: <ShareSlide title="ДЕЛИМО ЈЕДНАКО" hint="Једно у прву, једно у другу, једно у трећу, па опет." items={seq(buttons, 12)} /> },
+  { name: "На радни лист: делимо и поредимо", prompts: ["Делимо редом: једно у прву, једно у другу, једно у трећу, па опет.", "Уместо линија могу се користити папирни кругови."],
+    node: <WorksheetSlide title="Делимо и поредимо" color={C.green} pages={[
+      { p: "13", t: "Распореди по једнако", d: "Повуци линију од сваког дугмета до корпе." },
+      { p: "14", t: "Мање или више од 10?", d: "Преброј скуп, заокружи МАЊЕ или ВИШЕ." },
+      { p: "15", t: "Мој број", d: "Изабери број од 11 до 20, обој и нацртај." },
+    ]} tip="Помаже да дете прво потражи десет предмета. Ако их има још, онда је више од 10." /> },
+
+  // 4. Крећемо се (стране 16–17)
+  { name: "Пљесни и преброј", prompts: ["Показујем број, а ви толико пута пљеснете.", "Колико пљесака треба? Бројимо заједно.", "Па дај пет! (дланом о длан са одраслим, онолико пута колико пише)"],
+    node: <ClapSlide title="ПЉЕСНИ И ПРЕБРОЈ" hint="Одрасли покаже број, а деца пљесну." numbers={[2, 4, 6, 8, 10]} /> },
+  { name: "Десет корака и још", prompts: ["Правимо 10 корака. Колико смо направили?", "Колико још корака пише на картици?", "Колико укупно? (10 и још 3 је 13)"],
+    node: <StepsSlide title="ДЕСЕТ КОРАКА И ЈОШ" hint="Десет корака, па још толико колико пише на картици." cards={[1, 3, 5]} /> },
+  { name: "Крај", prompts: ["Браво! Колико смо данас научили да бројимо?", "Ко жели да залепи налепницу на бројевну стазу?"], node: <EndSlide /> },
 ];

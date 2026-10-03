@@ -1,12 +1,15 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
+type DeckSlide = { name: string; node: ReactNode; prompts?: string[] };
+
 const W = 1280, H = 720;
 
-export default function Deck({ slides }: { slides: { name: string; node: ReactNode }[] }) {
+export default function Deck({ slides }: { slides: DeckSlide[] }) {
   const [i, setI] = useState(0);
   const [reset, setReset] = useState(0);
   const [scale, setScale] = useState(1);
+  const [asking, setAsking] = useState(false);
   const box = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
 
@@ -38,6 +41,12 @@ export default function Deck({ slides }: { slides: { name: string; node: ReactNo
           <div key={`${i}-${reset}`} className="h-full w-full">{slides[i].node}</div>
         </div>
       </div>
+      {asking && slides[i].prompts && (
+        <aside className="mx-4 mb-1 rounded-2xl border-4 bg-white px-5 py-3 text-[18px]" style={{ borderColor: "#2f8f86" }}>
+          <p className="font-bold" style={{ color: "#23776f" }}>Питања за децу (за васпитачицу)</p>
+          <ul className="mt-1 list-disc pl-6">{slides[i].prompts.map((q, n) => <li key={n}>{q}</li>)}</ul>
+        </aside>
+      )}
       <nav className="flex items-center justify-between gap-3 px-4 py-3">
         <button className="btn !px-5 !py-2" onClick={() => go(-1)} disabled={i === 0} aria-label="Prethodni slajd">←</button>
         <div className="flex flex-1 flex-wrap items-center justify-center gap-2" aria-label="Slajdovi">
@@ -47,6 +56,7 @@ export default function Deck({ slides }: { slides: { name: string; node: ReactNo
           ))}
         </div>
         <span className="hidden text-[15px] sm:block">{i + 1} / {slides.length} · {slides[i].name}</span>
+        <button className="underline" onClick={() => setAsking((a) => !a)} aria-pressed={asking}>Питања</button>
         <button className="underline" onClick={() => setReset((r) => r + 1)}>Испочетка</button>
         <button className="underline" onClick={full}>Цео екран</button>
         <button className="btn !px-5 !py-2" onClick={() => go(1)} disabled={i === slides.length - 1} aria-label="Sledeći slajd">→</button>
