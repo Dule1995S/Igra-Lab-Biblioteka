@@ -1,0 +1,20 @@
+import Link from "next/link";
+import Deck from "@/components/prezentacija/Deck";
+import { slides } from "@/content/brojevi-do-20";
+
+// PRIVREMENI javni demo za pregled. Pre objave prebaciti iza prijave (/biblioteka/[slug]).
+export default function Demo() {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">
+      <Link href="/">← Igra Lab Biblioteka</Link>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-[34px] font-extrabold">Бројеви и количине до 20</h1>
+        <a href="/demo/brojevi-do-20/radni-list.pdf" className="btn">Преузми радни лист (PDF)</a>
+      </div>
+      <p className="mt-1">Прегледај интерактивну презентацију, па преузми радни лист за штампу.</p>
+      <div className="mt-4" style={{ height: "max(560px, calc(100vh - 220px))" }}>
+        <Deck slides={slides} />
+      </div>
+    </main>
+  );
+}

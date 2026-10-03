@@ -43,3 +43,9 @@ B2B sajt za vaspitačice: prijava, pa biblioteka sa prezentacijom i radnim listo
 - Šema baze i RLS: `supabase/schema.sql` (pokrenuti u Supabase SQL editoru).
 - Env: kopirati `.env.example` u `.env.local` i popuniti.
 - Pristup bazi daje red u `subscriptions` sa `status = 'active'`. Plaćanje još nije povezano.
+
+### Interaktivne prezentacije
+
+- Prezentacija je skup slajdova u podacima: `src/content/<knjizica>.tsx`. Prikazivač je `src/components/prezentacija/Deck.tsx`, vrste slajdova su u `slides.tsx`.
+- Probni primer: `/demo/brojevi-do-20` (privremeno javno, radni list za preuzimanje je u `sadrzaj/`). Pre objave prebaciti iza prijave.
+- Slike su izdvojene iz PDF-a radnog lista u `public/sprites/` (isto važi za sledeće knjižice).

@@ -8,9 +8,10 @@ const baloo = Baloo_2({
   weight: ["700", "800"],
 });
 
+// Baloo 2 nema ćirilicu, pa ćirilični naslovi (knjižice su na ćirilici) idu na Nunito 800.
 const nunito = Nunito({
   variable: "--font-nunito",
-  subsets: ["latin", "latin-ext"],
+  subsets: ["latin", "latin-ext", "cyrillic", "cyrillic-ext"],
 });
 
 export const metadata: Metadata = {
