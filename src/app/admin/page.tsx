@@ -50,6 +50,17 @@ async function novaLozinkaAdminu(formData: FormData) {
   redirect(error ? "/admin?greska=lozinka" : "/admin?lozinka=1");
 }
 
+async function postaviUloguIgraLab(formData: FormData) {
+  "use server";
+  await trazIgraLab();
+  const id = String(formData.get("id"));
+  const uloga = String(formData.get("uloga")) === "admin" ? "admin" : "member";
+  const admin = createAdminClient();
+  await admin.from("profiles").update({ role: uloga }).eq("id", id);
+  revalidatePath("/admin");
+  redirect("/admin?uloga=1");
+}
+
 async function iskljuci(formData: FormData) {
   "use server";
   await trazIgraLab();
@@ -59,13 +70,13 @@ async function iskljuci(formData: FormData) {
 }
 
 export default async function Administracija({ searchParams }: PageProps<"/admin">) {
-  const { greska, lozinka } = await searchParams;
+  const { greska, lozinka, uloga } = await searchParams;
   await trazIgraLab();
   const admin = createAdminClient();
   const [{ data: orgs }, { data: subs }, { data: profs }, { data: preuzimanja }, { data: korisnici }] = await Promise.all([
     admin.from("organizations").select("*").order("created_at", { ascending: false }),
     admin.from("subscriptions").select("org_id,status,current_period_end,provider_ref"),
-    admin.from("profiles").select("id,org_id,role"),
+    admin.from("profiles").select("id,org_id,role,full_name"),
     admin.from("downloads").select("org_id"),
     admin.auth.admin.listUsers({ perPage: 1000 }).then((r) => ({ data: r.data?.users ?? [] })),
   ]);
@@ -83,6 +94,7 @@ export default async function Administracija({ searchParams }: PageProps<"/admin
       <h1 className="text-[34px] md:text-[44px] font-extrabold">Administracija</h1>
       <p className="mt-2">Vrtići i pretplate. Aktivirajte vrtić kad uplata po fakturi stigne.</p>
       {greska && <p role="alert" className="mt-4 font-bold">Proverite podatke (lozinka najmanje 8 znakova, ispravan datum).</p>}
+      {uloga && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Uloga je promenjena.</p>}
       {lozinka && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Lozinka je postavljena.</p>}
 
       <ul className="mt-8 flex flex-col gap-5">
@@ -115,6 +127,21 @@ export default async function Administracija({ searchParams }: PageProps<"/admin
                   <button className="underline">Postavi lozinku</button>
                 </form>
               ))}
+              <details className="mt-3">
+                <summary className="cursor-pointer text-[16px] font-bold">Nalozi u vrtiću ({clanova(o.id)})</summary>
+                <ul className="mt-2 flex flex-col gap-1 text-[16px]">
+                  {profs?.filter((p) => p.org_id === o.id).map((p) => (
+                    <li key={p.id} className="flex flex-wrap items-center justify-between gap-2">
+                      <span>{p.full_name ?? "Bez imena"} · {email(p.id)} · {p.role === "admin" ? "administrator" : "vaspitačica"}</span>
+                      <form action={postaviUloguIgraLab}>
+                        <input type="hidden" name="id" value={p.id} />
+                        <input type="hidden" name="uloga" value={p.role === "admin" ? "member" : "admin"} />
+                        <button className="underline">{p.role === "admin" ? "Skini administratora" : "Postavi za administratora"}</button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </details>
               {a && <form action={iskljuci} className="mt-2"><input type="hidden" name="org" value={o.id} /><button className="underline">Isključi pretplatu</button></form>}
             </li>
           );

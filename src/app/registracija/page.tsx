@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import Captcha, { captchaToken } from "@/components/sajt/Captcha";
 import { createClient } from "@/lib/supabase/server";
 
 async function registracija(formData: FormData) {
@@ -11,6 +12,7 @@ async function registracija(formData: FormData) {
     email: f("email"),
     password: String(formData.get("password") ?? ""),
     options: {
+      captchaToken: captchaToken(formData),
       data: {
         full_name: f("full_name"),
         org_name: f("institution"),
@@ -67,6 +69,7 @@ export default async function Registracija({ searchParams }: PageProps<"/registr
         <label className="flex flex-col gap-1">Lozinka
           <input name="password" type="password" minLength={8} required className={polje} />
         </label>
+        <div className="sm:col-span-2"><Captcha /></div>
         <div className="sm:col-span-2"><button className="btn">Registruj vrtić</button></div>
       </form>
       <p className="mt-6"><Link href="/prijava">Već imamo nalog</Link></p>

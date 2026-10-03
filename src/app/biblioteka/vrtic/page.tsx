@@ -67,6 +67,20 @@ async function novaLozinka(formData: FormData) {
   redirect("/biblioteka/vrtic?lozinka=1");
 }
 
+async function postaviUlogu(formData: FormData) {
+  "use server";
+  const me = await trazAdmina();
+  const id = String(formData.get("id"));
+  const uloga = String(formData.get("uloga")) === "admin" ? "admin" : "member";
+  if (id === me.id) redirect("/biblioteka/vrtic");
+  const admin = createAdminClient();
+  const { data: target } = await admin.from("profiles").select("org_id").eq("id", id).maybeSingle();
+  if (target?.org_id !== me.org_id) redirect("/biblioteka/vrtic");
+  await admin.from("profiles").update({ role: uloga }).eq("id", id);
+  revalidatePath("/biblioteka/vrtic");
+  redirect("/biblioteka/vrtic?uloga=1");
+}
+
 const GRESKE: Record<string, string> = {
   lozinka: "Lozinka mora imati najmanje 8 znakova.",
   podaci: "Unesite ime, email i lozinku od najmanje 8 znakova.",
@@ -75,7 +89,7 @@ const GRESKE: Record<string, string> = {
 };
 
 export default async function MojVrtic({ searchParams }: PageProps<"/biblioteka/vrtic">) {
-  const { greska, dodato, lozinka } = await searchParams;
+  const { greska, dodato, lozinka, uloga } = await searchParams;
   const me = await trazAdmina();
   const supabase = await createClient();
 
@@ -98,6 +112,7 @@ export default async function MojVrtic({ searchParams }: PageProps<"/biblioteka/
       </p>
 
       {greska && <p role="alert" className="mt-4 rounded-xl bg-brand-warm/30 p-4 font-bold">{GRESKE[String(greska)] ?? "Došlo je do greške."}</p>}
+      {uloga && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Uloga je promenjena.</p>}
       {lozinka && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Nova lozinka je postavljena. Predajte je vaspitačici lično.</p>}
       {dodato && <p role="status" className="mt-4 rounded-xl bg-brand-cool/20 p-4 font-bold">Nalog je otvoren. Vaspitačica se prijavljuje emailom i lozinkom koju ste uneli.</p>}
 
@@ -112,6 +127,11 @@ export default async function MojVrtic({ searchParams }: PageProps<"/biblioteka/
                   <input type="hidden" name="id" value={c.id} />
                   <input name="password" type="text" minLength={8} required autoComplete="off" placeholder="Nova lozinka" aria-label={`Nova lozinka za ${c.full_name ?? "nalog"}`} className="w-40 rounded-lg border border-black/30 bg-white px-3 py-1 text-[16px]" />
                   <button className="underline">Postavi lozinku</button>
+                </form>
+                <form action={postaviUlogu}>
+                  <input type="hidden" name="id" value={c.id} />
+                  <input type="hidden" name="uloga" value={c.role === "admin" ? "member" : "admin"} />
+                  <button className="underline">{c.role === "admin" ? "Skini administratora" : "Postavi za administratora"}</button>
                 </form>
                 <form action={ukloni}><input type="hidden" name="id" value={c.id} /><button className="underline">Ukloni nalog</button></form>
               </div>

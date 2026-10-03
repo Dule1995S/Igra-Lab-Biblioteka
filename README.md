@@ -70,3 +70,10 @@ Probna knjižica: `supabase/seed.sql`.
 - Lozinke: administrator vrtića postavlja novu lozinku vaspitačici u `/biblioteka/vrtic`; administrator Igra Lab postavlja lozinku administratoru vrtića u `/admin`; svako menja svoju u `/biblioteka/nalog`. (Zaboravljena lozinka preko emaila nije uključena, jer traži podešen email servis.)
 - Preuzimanje radnog lista ide kroz `/biblioteka/preuzmi/<id>`: provera pristupa, evidencija u tabeli `downloads` i link koji važi minut. Broj preuzimanja po vrtiću se vidi u `/admin`.
 - Baza koja je već napravljena dobija novu tabelu pokretanjem `supabase/migrations/002_preuzimanja.sql`. Nova podešavanja koriste `supabase/setup.sql`.
+
+### Dodatna podešavanja (opciono)
+
+- **Zaštita od lažnih registracija (Turnstile):** napraviti besplatan Turnstile widget na Cloudflare-u, `NEXT_PUBLIC_TURNSTILE_SITE_KEY` u Vercel, a u Supabase Authentication, pa Attack Protection, uključiti CAPTCHA (Turnstile) sa tajnim ključem. Važi i za prijavu.
+- **Zaboravljena lozinka preko emaila:** u Supabase Authentication, pa URL Configuration, postaviti Site URL i dodati `https://<adresa>/auth/callback` u Redirect URLs; podesiti sopstveni SMTP (ugrađeni ima stroga ograničenja); u Vercel postaviti `NEXT_PUBLIC_EMAIL_RESET=1` i uraditi Redeploy.
+- **Rezervne kopije:** Supabase Pro pravi dnevne kopije (7 dana). Na besplatnom planu nema kopija; ručno: Project Settings, pa Database, pa Backups, ili `pg_dump` sa connection string-om.
+- **Predaja administratora:** administrator vrtića postavlja drugu vaspitačicu za administratora u „Moj vrtić"; Igra Lab to može u `/admin`.

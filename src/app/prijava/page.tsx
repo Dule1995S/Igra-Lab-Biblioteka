@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import Captcha, { captchaToken } from "@/components/sajt/Captcha";
 import { createClient } from "@/lib/supabase/server";
 
 async function prijava(formData: FormData) {
@@ -9,6 +10,7 @@ async function prijava(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({
     email: String(formData.get("email")),
     password: String(formData.get("password")),
+    options: { captchaToken: captchaToken(formData) },
   });
   if (error) redirect("/prijava?greska=1");
   redirect("/biblioteka");
@@ -29,10 +31,15 @@ export default async function Prijava({ searchParams }: PageProps<"/prijava">) {
         <label className="flex flex-col gap-1">Lozinka
           <input name="password" type="password" required className="rounded-lg border border-black/30 bg-white px-3 py-2" />
         </label>
+        <Captcha />
         <button className="btn">Prijavi se</button>
       </form>
       <p className="mt-6"><Link href="/registracija">Registrujte vrtić</Link></p>
-      <p className="mt-2 text-[16px] opacity-80">Zaboravili ste lozinku? Obratite se administratoru vašeg vrtića, on vam postavlja novu.</p>
+      {process.env.NEXT_PUBLIC_EMAIL_RESET === "1" ? (
+        <p className="mt-2"><Link href="/zaboravljena-lozinka">Zaboravili ste lozinku?</Link></p>
+      ) : (
+        <p className="mt-2 text-[16px] opacity-80">Zaboravili ste lozinku? Obratite se administratoru vašeg vrtića, on vam postavlja novu.</p>
+      )}
     </main>
   );
 }
