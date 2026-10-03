@@ -6,6 +6,8 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   // Bez Supabase podešavanja (npr. prvi pregled) sajt radi, samo bez prijave.
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    // Zaštićen deo bez podešene baze ne sme da bude dostupan.
+    if (request.nextUrl.pathname.startsWith("/biblioteka")) return NextResponse.redirect(new URL("/prijava", request.url));
     return NextResponse.next();
   }
   let response = NextResponse.next({ request });

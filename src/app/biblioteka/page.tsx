@@ -18,6 +18,7 @@ export default async function Biblioteka() {
   if (!user) redirect("/prijava");
 
   const { data: access } = await supabase.rpc("has_access", { uid: user.id });
+  const { data: me } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
   const { data: booklets } = access ? await supabase.from("booklets").select("age_group") : { data: null };
   const count = (a: string) => booklets?.filter((b) => b.age_group === a).length ?? 0;
 
@@ -25,13 +26,16 @@ export default async function Biblioteka() {
     <main className="mx-auto max-w-4xl px-4 py-12">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-[34px] md:text-[44px] font-extrabold">Moja biblioteka</h1>
-        <form action={odjava}><button className="underline">Odjava</button></form>
+        <div className="flex items-center gap-5">
+          {me?.role === "admin" && <Link href="/biblioteka/vrtic">Moj vrtić</Link>}
+          <form action={odjava}><button className="underline">Odjava</button></form>
+        </div>
       </div>
       <p className="mt-2">Izaberite uzrast dece.</p>
 
       {!access && (
         <p className="mt-6 rounded-xl bg-brand-warm/30 p-4">
-          Vaš nalog još nema aktivnu pretplatu. Pristup se otvara nakon plaćanja.
+          Pretplata vašeg vrtića nije aktivna. Pristup se otvara kad vrtić plati pretplatu. Obratite se administratoru u vrtiću.
         </p>
       )}
 

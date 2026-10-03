@@ -56,3 +56,11 @@ B2B sajt za vaspitačice: prijava, pa biblioteka sa prezentacijom i radnim listo
 `/biblioteka` (uzrasti 3, 4, 5, 6) → `/biblioteka/uzrast/<uzrast>` (knjižice) → `/biblioteka/<slug>` (interaktivna prezentacija + radni listovi).
 Jedna aktivna pretplata otvara sve. Nova knjižica: red u `booklets` (kolona `deck` = ključ iz `src/content/index.ts`), PDF radnog lista u bucket `worksheets`.
 Probna knjižica: `supabase/seed.sql`.
+
+### B2B model (vrtić plaća, svaka vaspitačica ima svoj login)
+
+- `organizations` = vrtić (`seats` = najviše naloga, podrazumevano 12). `profiles.org_id` i `role` (`admin` | `member`). `subscriptions.org_id`: pretplata pripada vrtiću, pristup imaju svi članovi.
+- Registracija (`/registracija`) pravi vrtić i njegov administratorski nalog. Administrator u `/biblioteka/vrtic` otvara i uklanja naloge vaspitačica (server koristi `SUPABASE_SERVICE_ROLE_KEY`, nikad u pregledaču). Proverava se i broj naloga prema `seats`.
+- Bezbednost: `org_id` se čita samo iz `app_metadata` (postavlja ga server). Iz `user_metadata` se ignoriše, inače bi se bilo ko mogao učlaniti u tuđi vrtić. Pravila pristupa (RLS) su proverena probom na Postgresu.
+- Ručna aktivacija pretplate i promena broja naloga: komentari na kraju `supabase/schema.sql`.
+- Podaci za objavu (naziv firme, PIB, email, cena) idu u `src/lib/sajt.ts`. Pravne stranice su nacrt.

@@ -22,3 +22,15 @@ export async function createClient() {
     },
   );
 }
+
+/** Prijavljen korisnik ili null. Bez Supabase podešavanja uvek null (sajt radi i bez prijave). */
+export async function getUserSafe() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    return data.user;
+  } catch {
+    return null;
+  }
+}

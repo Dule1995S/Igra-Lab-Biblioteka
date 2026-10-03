@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 async function prijava(formData: FormData) {
   "use server";
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) redirect("/prijava?greska=1");
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: String(formData.get("email")),
