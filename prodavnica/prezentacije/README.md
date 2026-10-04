@@ -9,8 +9,12 @@ Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (
 | `zivotinje-sveta.html` | Животиње света | šta ne pripada, danju ili noću, nađi istu, izdaleka ili izbliza, bubamara, šta je veće | Чувам природу | `ЗВЕРКЕ20` |
 | `cuvam-prirodu.html` | Чувам природу | šta nije otpad, tri kante, gde stane više vode, šta od čega može, od kore do cveta, drvo | Србија | `ПРИРОДА20` |
 | `srbija.html` | Србија | koje parče fali (mapa), reka teče, planine po veličini, šta je veće, gde šta raste, moja nošnja | Витезови и змајеви | `СРБИЈА20` |
+| `nauka-kod-kuce.html` | Наука код куће | pluta ili tone, šta fali u drugom redu, senka od lampe, magnet drži ili ne, ради супротно, moja vaga | Технологија око нас | `НАУКА20` |
+| `moj-grad-i-selo.html` | Мој град и село | šta ne pripada (ulica), po putu ili po vodi, šta se gde dobija, traktori po veličini, moja saksija, šta je veće | Под морем | `МЕСТО20` |
+| `pod-morem.html` | Под морем | rakovi po veličini, šta fali u drugom redu, do školjke na dnu, moj greben, šta je veće, pluta ili tone | Технологија око нас | `МОРЕ20` |
+| `tehnologija-oko-nas.html` | Технологија око нас | gde šta stoji (4 korpe), na struju ili na bateriju, ugasi svaki treći ekran, mreža vozila, moj robot, šta je šta zamenilo | Наука код куће | `ТЕХНО20` |
 
-Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
+Svih devet priča čine krug „sledeće avanture“, pa se svaka završava preporukom druge knjižice. Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
 
 ## Ubacivanje na sajt
 
@@ -67,7 +71,9 @@ Vrste igara u `engine/engine.js` (`GAMES`):
 | `grid` | Dopunjuje mrežu (ista stvar jednom u redu i koloni) |
 | `trace` | Prstom prati liniju od starta do cilja |
 | `dig` | Prstom skida zemlju i otkriva šta je ispod |
-| `shadow` | Vuče izvor svetla i gleda kako se menja senka |
+| `shadow` | Vuče izvor svetla (buktinja, lampa) i gleda kako se menja senka |
+| `missing` | Upoređuje dva reda i bira šta fali u donjem |
+| `nth` | Dodiruje svaku treću (n-tu) sliku u redu |
 | `stickers` | Slaže svoj znak: boja (neobavezno) i tačno toliko znakova koliko ima mesta (štit, drvo, nošnja, bubamara) |
 
 Nova vrsta igre je jedna funkcija u `GAMES` koja dobija `(root, podaci, ctx, indeks)`. `ctx.say`, `ctx.next`, `ctx.finish` i `ctx.burst` upravljaju oblačićem, dugmetom „Даље“, završetkom koraka i konfetama.

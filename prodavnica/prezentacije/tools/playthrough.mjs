@@ -96,6 +96,21 @@ for (let i = 0; i < story.steps.length; i++) {
     const t = await page.locator(".torch").boundingBox();
     await drag([[t.x + t.width / 2, t.y + 60], [640, t.y + 60], [620, t.y + 60]], false); await page.waitForTimeout(200); await shot(`${n}-near`);
     await drag([[300, t.y + 60], [150, t.y + 60]]); await page.waitForTimeout(300); await shot(`${n}-done`); await next();
+  } else if (g.type === "missing") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r];
+      if (r === 0) { await page.locator(".choices-row .card").nth((R.right + 1) % R.choices.length).click(); await page.waitForTimeout(200); await shot(`${n}-wrong`); }
+      await page.locator(".choices-row .card").nth(R.right).click(); await page.waitForTimeout(250);
+      if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "nth") {
+    const nn = g.n || 3; let first = true;
+    const btns = page.locator(".nb"); const total = await btns.count(); let pos = 0;
+    for (let ri = 0; ri < g.rows.length; ri++) for (let i = 0; i < g.rows[ri].length; i++, pos++) {
+      if (first && (i + 1) % nn !== 0) { await btns.nth(pos).click(); await page.waitForTimeout(200); await shot(`${n}-wrong`); first = false; }
+      if ((i + 1) % nn === 0) { await btns.nth(pos).click(); await page.waitForTimeout(120); }
+    }
+    await page.waitForTimeout(300); await shot(`${n}-done`); await next();
   } else throw new Error("nepoznata igra " + g.type);
 }
 await page.waitForTimeout(4500); await shot("90-finale");

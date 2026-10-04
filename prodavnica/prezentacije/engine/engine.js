@@ -236,7 +236,7 @@
   // Senka: povuci buktinju bliže i dalje od štita
   GAMES.shadow = function (root, p, c, idx) {
     var Ox = 760, Wx = 960, Cy = 340, SH = 150, LMIN = 130, LMAX = 640, WALL_TOP = 90;
-    var shW = SH * 243 / 300;
+    var shW = SH * (p.objRatio || 0.81), LH = 150, lightY = p.lightY == null ? 0.22 : p.lightY;
     root.classList.add("shadow-scene");
     var wall = h("div", { class: "wall" }); root.appendChild(wall);
     root.appendChild(h("div", { class: "floor" }));
@@ -245,14 +245,14 @@
     var rayB = svgEl("line", { stroke: "#ffd86b", "stroke-width": 4, "stroke-dasharray": "10 8", "stroke-linecap": "round" });
     rays.appendChild(rayA); rays.appendChild(rayB); root.appendChild(rays);
     var post = h("div", { class: "post" }); post.style.cssText = "left:" + (Ox - 5) + "px;top:" + (Cy + SH / 2 - 8) + "px;height:" + (590 - (Cy + SH / 2) + 8) + "px"; root.appendChild(post);
-    var shield = img("stit", { class: "shield", alt: "штит" }); shield.style.left = Ox - shW / 2 + "px"; root.appendChild(shield);
+    var shield = img(p.object || "stit", { class: "shield", alt: "" }); shield.style.left = Ox - shW / 2 + "px"; root.appendChild(shield);
     var wallclip = h("div", { class: "wallclip" }); root.appendChild(wallclip);
-    var shade = img("stit", { class: "shade", alt: "" }); wallclip.appendChild(shade);
+    var shade = img(p.object || "stit", { class: "shade", alt: "" }); wallclip.appendChild(shade);
     var glow = h("div", { class: "glow" }); root.appendChild(glow);
-    var torch = img("buktinja", { class: "torch", alt: "буктиња", tabindex: "0", role: "slider", "aria-label": "Буктиња: повуци лево или десно", "aria-valuemin": LMIN, "aria-valuemax": LMAX });
-    torch.style.top = Cy - 33 + "px"; root.appendChild(torch);
-    var hint = h("div", { class: "drag-hint", text: "◀ вуци буктињу ▶" }); hint.style.left = "100px"; hint.style.top = "470px"; root.appendChild(hint);
-    var tw = 150 * 121 / 300;
+    var torch = img(p.light || "buktinja", { class: "torch", alt: "светло", tabindex: "0", role: "slider", "aria-label": "Светло: повуци лево или десно", "aria-valuemin": LMIN, "aria-valuemax": LMAX });
+    torch.style.top = Cy - LH * lightY + "px"; torch.style.height = LH + "px"; root.appendChild(torch);
+    var hint = h("div", { class: "drag-hint", text: p.dragHint || "◀ вуци буктињу ▶" }); hint.style.left = "100px"; hint.style.top = "470px"; root.appendChild(hint);
+    var tw = LH * (p.lightRatio || 0.403);
     var near = false, far = false, done = false, lx = 190;
 
     function place(x) {
@@ -510,6 +510,66 @@
     var stop = function () { drawing = false; if (!done && cleared() > 0.62) win(); };
     cv.addEventListener("pointerup", stop); cv.addEventListener("pointercancel", stop);
     function win() { done = true; cv.style.transition = "opacity .6s"; cv.style.opacity = 0; c.burst(box, 30); c.finish(p.doneMsg, idx); }
+  };
+
+  // Šta fali: gornji red je ceo, u donjem jedna stvar fali
+  GAMES.missing = function (root, p, c, idx) {
+    var r = 0;
+    function row(keys, hole) {
+      var el = h("div", { class: "mrow" });
+      keys.forEach(function (k) { el.appendChild(k == null ? (hole.el = h("div", { class: "hole", text: "?" })) : img(k)); });
+      return el;
+    }
+    function round() {
+      var R = p.rounds[r], hole = {}; root.textContent = ""; nextBtn.hidden = true;
+      root.classList.add("missing-scene");
+      root.appendChild(h("div", { class: "stage-title" }, h("div", { class: "title-pill", text: R.title || p.title }),
+        h("div", { class: "rounddots" }, p.rounds.map(function (_, i) { return h("b", { class: i <= r ? "on" : "" }); }))));
+      root.appendChild(h("div", { class: "rows" }, row(R.top, hole), row(R.bottom, hole)));
+      var cards = h("div", { class: "choices-row" });
+      R.choices.forEach(function (k, i) {
+        var b = h("button", { class: "card", "aria-label": N(k) }, img(k), h("div", { class: "nm", text: N(k) }));
+        b.onclick = function () {
+          if (i === R.right) {
+            c.snd.ok(); b.classList.add("right");
+            Array.prototype.forEach.call(cards.children, function (x) { x.disabled = true; if (x !== b) x.classList.add("dim"); });
+            hole.el.textContent = ""; hole.el.className = "hole filled"; hole.el.appendChild(img(R.choices[R.right]));
+            c.burst(hole.el, 22);
+            if (r < p.rounds.length - 1) { c.say(R.fact); c.next("Даље ➜", function () { r++; round(); }); }
+            else c.finish(R.fact + (p.bonus ? " " + p.bonus : ""), idx);
+          } else { c.snd.no(); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake", "wrong"); c.say(p.hint); }
+        };
+        cards.appendChild(b);
+      });
+      root.appendChild(cards);
+      if (r > 0) c.say(p.again);
+    }
+    round();
+  };
+
+  // Svaki n-ti: dodirni svaku treću (četvrtu...) sliku u redu
+  GAMES.nth = function (root, p, c, idx) {
+    var n = p.n || 3, left = 0, rowsEl = h("div", { class: "nth-rows" });
+    root.classList.add("nth-scene");
+    root.appendChild(h("div", { class: "stage-title" }, h("div", { class: "title-pill", text: p.title })));
+    p.rows.forEach(function (keys, ri) {
+      var row = h("div", { class: "nth-row" });
+      keys.forEach(function (k, i) {
+        var target = (i + 1) % n === 0; if (target) left++;
+        var b = h("button", { class: "nb", "aria-label": N(k) }, img(k), h("span", { class: "cnt", text: String((i % n) + 1) }));
+        b.onclick = function () {
+          if (b.dataset.done) return;
+          if (target) {
+            b.dataset.done = "1"; b.classList.add("hit"); c.snd.ok(); c.burst(b, 10); left--;
+            if (left === 0) c.finish(p.doneMsg, idx);
+            else c.say(p.next);
+          } else { c.snd.no(); row.classList.add("counted"); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); c.say(p.hint); }
+        };
+        row.appendChild(b);
+      });
+      rowsEl.appendChild(row);
+    });
+    root.appendChild(rowsEl);
   };
 
   // Nalepnice: slaganje sopstvenog znaka (štit, životinja...) sa tačno toliko znakova koliko ima mesta
