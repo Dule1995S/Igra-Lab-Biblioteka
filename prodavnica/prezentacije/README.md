@@ -1,6 +1,6 @@
 # Interaktivne priče uz knjižice (za prodavnicu igralab.rs)
 
-Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (po jedna iz svake celine) sa Liskom, pa ekran „Za roditelja“ sa pregledom šta je dete vežbalo, stranicama knjižice i kodom za sledeću knjižicu. Sve (slike, font, kod) je u jednom fajlu, bez spoljnih zahteva, pa radi na bilo kom hostingu, u iframe-u i na telefonu. Roditelj čita naglas šta Lisko kaže u oblačiću.
+Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest (kod Mozgalica osam) kratkih igara (po jedna iz svake celine) sa Liskom, pa ekran „Za roditelja“ sa pregledom šta je dete vežbalo, stranicama knjižice i kodom za sledeću knjižicu. Sve (slike, font, kod) je u jednom fajlu, bez spoljnih zahteva, pa radi na bilo kom hostingu, u iframe-u i na telefonu. Roditelj čita naglas šta Lisko kaže u oblačiću.
 
 | Priča (`dist/`) | Knjižica | Šest igara | Sledeća knjižica | Kod |
 |---|---|---|---|---|
@@ -18,6 +18,10 @@ Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (
 | `ko-je-ko-1.html` | Мали детектив: Ко је ко? 1 | dodeli imena slikama po tragovima: mačke, deca u redu, trka puževa, mala ulica, psi, rođendani | Ко је ко? 2 | `ИМЕНА20` |
 | `ko-je-ko-2.html` | Мали детектив: Ко је ко? 2 | tabela sa Х i kvačicom (jedna i dve tabele): ljubimci, užina, pokloni, trka, ranci, izlet | Тајна зачараног ормана | `ТАБЕЛА20` |
 | `tajna-ormana.html` | Мали детектив: Тајна зачараног ормана | igra bekstva: svaki zadatak daje slovo (ili broj → slovo iz azbuke), a ЗВЕЗДА otvara orman | Ко је ко? 2 | `ЛУПА20` |
+| `mozgalice-3.html` | Мозгалице за 3 године | spoji iste, šta je veće (sa veličinama), tačka do tačke, broj (count), nađi oblik, ne pripada, razlike, lavirint | Мозгалице 4 и 5 | `МАЛИ20` |
+| `mozgalice-45.html` | Мозгалице за 4 и 5 година | razlike, tačka do tačke, ne pripada, od malog do velikog, šta sledi (niz), dve grupe, od semena do cveta, lavirint | Мозгалице 6 и 7 | `МОЗГА20` |
+| `mozgalice-67.html` | Мозгалице за 6 и 7 година | razlike, tačka do tačke, slovo u gužvi, sudoku sa životinjama, ukrštenica (slaganje reči), vaga, šta fali u mreži, lavirint | Тајна зачараног ормана | `СЕДАМ20` |
+| `novogodisnje-mozgalice.html` | Новогодишње мозгалице | sudoku, slaganje reči (i šifra), osmosmerka, lavirint, snešci (precrtavanje), računi sa slikama, dve iste kugle | Мозгалице 6 и 7 | `ПАХУЉА20` |
 
 Priče čine krugove „sledeće avanture“, pa se svaka završava preporukom druge knjižice. Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
 
@@ -60,6 +64,8 @@ Potreban je samo Node 18+. Izlaz je u `dist/`.
    - `tools/segment.sh knjizica.pdf <strana> <folder>` pronađe pojedinačne crteže na strani i numeriše ih na slici `seg-p<strana>.png`.
    - `tools/cut.sh knjizica.pdf <strana> <folder> ime=broj ...` iseče izabrane crteže u providni PNG (može i `ime=broj:uvlačenje`, ručni okvir `ime=@x,y,w,h` i `~flop` da se polovina spoji sa ogledalom).
    - `tools/cover.sh` iseče ilustraciju sa naslovne strane.
+   - `tools/diffs.py` iz dve polovine strane izvuče dve slike za igru `diff` i sam izračuna gde se razlikuju (uporedite broj sa brojem u knjižici i pogledajte kontrolnu sliku).
+   - `tools/sudoku-givens.mjs` iz zadatog rešenja izabere najmanje zadatih polja uz jedinstveno rešenje.
    - Primeri celih postupaka su `stories/*/extract-assets.sh`.
 3. Za svaku celinu izabrati vrstu igre i popuniti podatke.
 4. `node tools/verify.mjs <naziv>` proveri da svaki slučaj sa tragovima (imena, tabela, bojenje, precrtavanje) ima TAČNO jedno rešenje, da nijedan trag nije suvišan i da slova nagrade čine čarobnu reč.
@@ -85,6 +91,20 @@ Vrste igara u `engine/engine.js` (`GAMES`):
 | `paint` | Boji predmete bojicama po tragovima |
 | `eliminate` | Precrtava one koje trag ne dozvoljava; ostaje rešenje |
 | `numq` | Rešava račun sa slikama ili zid od cigli; bira broj koji fali |
+| `match` | Spaja iste slike povlačenjem ili dodirom |
+| `count` | Broji slike i bira tačan broj |
+| `connect` | Spaja tačke po redu (broj po broj), slika se otkriva |
+| `findall` | Dodiruje sve oblike traženog tipa među više njih |
+| `maze` | Prstom provodi lika kroz lavirint (generiše se pri izgradnji) |
+| `letters` | Dodiruje sva tražena slova u gužvi sličnih |
+| `spell` | Slaže reč slovo po slovo prema slici (i šifra: slika → slovo) |
+| `sudoku` | Sudoku sa slikama (4x4 ili 6x6), jedinstveno rešenje |
+| `scale` | Bira stranu vage koja pretiče |
+| `wordsearch` | Osmosmerka: povlači prstom preko reči |
+| `diff` | Traži razlike na dve skoro iste slike (`stack: true` slaže slike jednu ispod druge) |
+| `pattern` | Nastavlja niz: šta ide na prazno mesto |
+| `twins` | Nalazi dve potpuno iste (novogodišnje kugle) |
+| `multi` | Više delova (različitih igara) u jednom koraku |
 | `stickers` | Slaže svoj znak: boja (neobavezno) i tačno toliko znakova koliko ima mesta (štit, drvo, nošnja, bubamara) |
 
 Nova vrsta igre je jedna funkcija u `GAMES` koja dobija `(root, podaci, ctx, indeks)`. `ctx.say`, `ctx.next`, `ctx.finish` i `ctx.burst` upravljaju oblačićem, dugmetom „Даље“, završetkom koraka i konfetama.

@@ -10,7 +10,7 @@ const dataUri = (file) => `data:${mime[extname(file)]};base64,${readFileSync(fil
 // JSON za ugradnju u <script>: "</" i U+2028/2029 bi razbili skriptu
 const json = (v) => JSON.stringify(v).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
 
-const slugs = process.argv[2] ? [process.argv[2]] : readdirSync(join(root, "stories"), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+const slugs = process.argv[2] ? [process.argv[2]] : readdirSync(join(root, "stories"), { withFileTypes: true }).filter((d) => d.isDirectory() && !d.name.startsWith("_")).map((d) => d.name);
 for (const slug of slugs) {
   const dir = join(root, "stories", slug);
   const story = (await import(pathToFileURL(join(dir, "story.mjs")).href)).default;

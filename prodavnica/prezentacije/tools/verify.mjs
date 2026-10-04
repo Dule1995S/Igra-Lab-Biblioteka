@@ -25,13 +25,13 @@ function uniq(label, all, clues, solutionKey, make) {
   checked++;
 }
 
-const slugs = process.argv[2] ? [process.argv[2]] : readdirSync(join(root, "stories"), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+const slugs = process.argv[2] ? [process.argv[2]] : readdirSync(join(root, "stories"), { withFileTypes: true }).filter((d) => d.isDirectory() && !d.name.startsWith("_")).map((d) => d.name);
 for (const slug of slugs) {
   const story = (await import(pathToFileURL(join(root, "stories", slug, "story.mjs")).href)).default;
   console.log(slug);
   story.steps.forEach((st, si) => {
-    const g = st.game;
-    (g.rounds || []).forEach((R, ri) => {
+    const gl = st.game.type === "multi" ? st.game.parts : [st.game];
+    gl.forEach((g) => (g.rounds || []).forEach((R, ri) => {
       const L = `${st.label} #${ri + 1}`;
       if (g.type === "assign") {
         const n = R.slots.length, idxs = [...Array(n).keys()];
@@ -58,12 +58,33 @@ for (const slug of slugs) {
         if (alive.length !== 1) err(`${L}: ostaje ${alive.length} životinja`);
         else if (R.animals[alive[0]].key !== R.answer) err(`${L}: ostaje ${R.animals[alive[0]].key}, a odgovor je ${R.answer}`);
         checked++;
+      } else if (g.type === "sudoku") {
+        const n = R.n, sol = R.sol, ok0 = sol.every((row, y) => row.every((v, x) => { for (let i = 0; i < n; i++) { if (i !== x && sol[y][i] === v) return false; if (i !== y && sol[i][x] === v) return false; } const by = Math.floor(y / R.br) * R.br, bx = Math.floor(x / R.bc) * R.bc; for (let a = 0; a < R.br; a++) for (let b = 0; b < R.bc; b++) if ((by + a !== y || bx + b !== x) && sol[by + a][bx + b] === v) return false; return v >= 1 && v <= n; }));
+        if (!ok0) err(`${L}: rešenje sudokua nije ispravno`);
+        const grid = R.given.map((row, y) => row.map((g, x) => (g ? sol[y][x] : 0))); let count = 0;
+        const okc = (y, x, v) => { for (let i = 0; i < n; i++) if (grid[y][i] === v || grid[i][x] === v) return false; const by = Math.floor(y / R.br) * R.br, bx = Math.floor(x / R.bc) * R.bc; for (let a = 0; a < R.br; a++) for (let b = 0; b < R.bc; b++) if (grid[by + a][bx + b] === v) return false; return true; };
+        const solve = () => { if (count > 1) return; for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (!grid[y][x]) { for (let v = 1; v <= n; v++) if (okc(y, x, v)) { grid[y][x] = v; solve(); grid[y][x] = 0; } return; } count++; };
+        solve(); if (count !== 1) err(`${L}: sudoku ima ${count > 1 ? "više" : "0"} rešenja`); checked++;
+      } else if (g.type === "twins") {
+        let pairs = 0; for (let i = 0; i < R.items.length; i++) for (let j = i + 1; j < R.items.length; j++) { const a = R.items[i], b = R.items[j]; if (a.c === b.c && a.pat === b.pat && (a.cap || "") === (b.cap || "")) pairs++; }
+        if (pairs !== 1) err(`${L}: ${pairs} istih parova kugli (treba 1)`); checked++;
+      } else if (g.type === "spell") {
+        if (R.imgs && R.imgs.length !== R.word.length) err(`${L}: broj slika i slova ne odgovara`);
+        if (R.legend && R.imgs) R.imgs.forEach((im, i) => { const e = R.legend.find((q) => q.img === im); if (!e || e.letter !== R.word[i]) err(`${L}: šifra ne daje slovo ${i + 1}`); });
+        checked++;
+      } else if (g.type === "wordsearch") {
+        R.words.forEach((w) => { const [a, b] = R.pos[w] || []; if (!a) return err(`${L}: nema položaja za ${w}`); const len = w.length, dy = Math.sign(b[0] - a[0]), dx = Math.sign(b[1] - a[1]); let s = ""; for (let i = 0; i < len; i++) s += R.grid[a[0] + dy * i][a[1] + dx * i]; if (s !== w) err(`${L}: reč ${w} nije u mreži (${s})`); });
+        checked++;
+      } else if (g.type === "maze") {
+        const { cols, rows, cells } = R, seen = new Set(["0,0"]), q = [[0, 0]]; const D = [[0, -1, 1], [1, 0, 2], [0, 1, 4], [-1, 0, 8]];
+        while (q.length) { const [x, y] = q.shift(); for (const [dx, dy, b] of D) if (cells[y][x] & b) { const k = `${x + dx},${y + dy}`; if (!seen.has(k)) { seen.add(k); q.push([x + dx, y + dy]); } } }
+        if (!seen.has(`${cols - 1},${rows - 1}`)) err(`${L}: lavirint nema put`); checked++;
       } else if (g.type === "numq") {
         if (!R.choices.includes(R.answer)) err(`${L}: tačan broj nije među ponuđenima`);
         if (R.check && !R.check()) err(`${L}: jednačina se ne slaže`);
         checked++;
       }
-    });
+    }));
     if (st.reward && story.magic) {
       const W = story.magic.word.charAt(st.slot);
       const L = st.reward.letter || ALPHA[st.reward.number - 1];

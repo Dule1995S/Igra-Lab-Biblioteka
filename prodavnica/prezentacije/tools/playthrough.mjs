@@ -44,7 +44,7 @@ async function drag(points, upAfter = true) {
 }
 
 for (let i = 0; i < story.steps.length; i++) {
-  const g = story.steps[i].game, n = String(i + 1).padStart(2, "0"); curI = i;
+  const g = story.steps[i].game, n = String(i + 1).padStart(2, "0"), n_ = n; curI = i;
   await page.waitForTimeout(350);
   await shot(`${n}-${g.type}-start`);
   if (g.type === "odd") {
@@ -174,6 +174,107 @@ for (let i = 0; i < story.steps.length; i++) {
       if (r === 0) { await page.locator(".nkey", { hasText: new RegExp("^" + wrong + "$") }).click(); await page.waitForTimeout(200); await shot(`${n}-wrong`); }
       await page.locator(".nkey", { hasText: new RegExp("^" + R.answer + "$") }).click(); await page.waitForTimeout(300);
       if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "match") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], n = R.keys.length, order = R.right || null;
+      const cards = page.locator(".mcard"), ord = order || [...Array(n).keys()];
+      await cards.nth(0).click(); await cards.nth(n + ((ord.indexOf(0) + 1) % n)).click(); await page.waitForTimeout(150); if (r === 0) await shot(`${n_}-wrong`);
+      for (let i = 0; i < n; i++) { const j = ord.indexOf(i); await cards.nth(i).click(); await cards.nth(n + j).click(); await page.waitForTimeout(100); if (r === 0 && i === 0) await shot(`${n_}-half`); }
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "count") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], wrong = R.choices.find((v) => v !== R.n);
+      if (r === 0) { await page.locator(".nkey", { hasText: new RegExp("^" + wrong + "$") }).click(); await page.waitForTimeout(150); await shot(`${n_}-wrong`); }
+      await page.locator(".nkey", { hasText: new RegExp("^" + R.n + "$") }).click(); await page.waitForTimeout(250);
+      if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "connect") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      await page.waitForTimeout(200);
+      const pts = await page.evaluate(() => window.__T.connectPts());
+      if (pts.length > 2) { await page.mouse.click(pts[2][0], pts[2][1]); await page.waitForTimeout(120); if (r === 0) await shot(`${n_}-wrong`); }
+      for (let i = 0; i < pts.length; i++) { await page.mouse.click(pts[i][0], pts[i][1]); await page.waitForTimeout(60); if (r === 0 && i === Math.floor(pts.length / 2)) await shot(`${n_}-half`); }
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "findall") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], cells = page.locator(".fa-cell");
+      const bad = R.cells.findIndex((q) => q.t !== R.target); await cells.nth(bad).click(); await page.waitForTimeout(150); if (r === 0) await shot(`${n_}-wrong`);
+      for (let i = 0; i < R.cells.length; i++) if (R.cells[i].t === R.target) await cells.nth(i).click();
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "maze") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      await page.waitForTimeout(200);
+      const pts = await page.evaluate(() => window.__T.mazePts());
+      await page.mouse.move(pts[0][0], pts[0][1]); await page.mouse.down();
+      for (let i = 1; i < pts.length; i++) { await page.mouse.move(pts[i][0], pts[i][1], { steps: 3 }); if (r === 0 && i === Math.floor(pts.length / 2)) await shot(`${n_}-half`); }
+      await page.mouse.up(); await page.waitForTimeout(300); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "letters") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], cells = page.locator(".lt-cell"), cols = R.grid[0].length;
+      const bad = R.grid.flat().findIndex((ch) => ch !== R.target); await cells.nth(bad).click(); await page.waitForTimeout(150); if (r === 0) await shot(`${n_}-wrong`);
+      let k = 0; for (const ch of R.grid.flat()) { if (ch === R.target) { await cells.nth(k).click(); if (r === 0 && k > 20) await shot(`${n_}-half`); } k++; }
+      void cols; await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "spell") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], word = R.word.split("");
+      const press = async (letters) => { for (const L of letters) await page.locator(".sp-tile:not(.used)", { hasText: new RegExp("^" + L + "$") }).first().click(); };
+      if (r === 0) { await press([...word].reverse()); await page.waitForTimeout(200); await shot(`${n_}-wrong`); await page.waitForTimeout(700); }
+      await press(word); if (r === 0) await page.waitForTimeout(50);
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "sudoku") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], n = R.n, cells = page.locator(".su-cell"), tray = page.locator(".su-tray .card");
+      let first = true;
+      for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (!R.given[y][x]) {
+        await cells.nth(y * n + x).click();
+        if (first) { first = false; const gx = R.given[y].findIndex((v) => v); if (gx >= 0) { await tray.nth(R.sol[y][gx] - 1).click(); await page.waitForTimeout(100); await shot(`${n_}-wrong`); } }
+        await tray.nth(R.sol[y][x] - 1).click(); await page.waitForTimeout(40);
+      }
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "scale") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], pans = page.locator(".pan");
+      await pans.nth(R.heavier === "left" ? 1 : 0).click(); await page.waitForTimeout(150); if (r === 0) await shot(`${n_}-wrong`);
+      await pans.nth(R.heavier === "left" ? 0 : 1).click(); await page.waitForTimeout(900);
+      if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "wordsearch") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const segs = await page.evaluate(() => window.__T.wsCells());
+      await page.mouse.click(segs[0][0][0], segs[0][0][1]); await page.mouse.click(segs[0][0][0] + 2, segs[0][0][1]); await page.waitForTimeout(120); if (r === 0) await shot(`${n_}-wrong`);
+      let k = 0; for (const [a, b] of segs) { await page.mouse.click(a[0], a[1]); await page.mouse.click(b[0], b[1]); await page.waitForTimeout(100); if (r === 0 && k === 0) await shot(`${n_}-half`); k++; }
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "diff") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      await page.waitForTimeout(250);
+      const pts = await page.evaluate(() => window.__T.diffPts());
+      const box = await page.locator(".df-img").nth(1).boundingBox(); await page.mouse.click(box.x + 3, box.y + 3); await page.waitForTimeout(120); if (r === 0) await shot(`${n_}-wrong`);
+      let k = 0; for (const [x, y] of pts) { await page.mouse.click(x, y); await page.waitForTimeout(100); if (r === 0 && k === 0) await shot(`${n_}-half`); k++; }
+      await page.waitForTimeout(250); if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "pattern") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r];
+      if (r === 0) { await page.locator(".pt-choices .card").nth((R.right + 1) % R.choices.length).click(); await page.waitForTimeout(150); await shot(`${n_}-wrong`); }
+      await page.locator(".pt-choices .card").nth(R.right).click(); await page.waitForTimeout(250);
+      if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
+    }
+  } else if (g.type === "twins") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], cells = page.locator(".tw-cell"), it = R.items; let pair = null;
+      for (let i = 0; i < it.length && !pair; i++) for (let j = i + 1; j < it.length; j++) if (it[i].c === it[j].c && it[i].pat === it[j].pat && (it[i].cap || "") === (it[j].cap || "")) { pair = [i, j]; break; }
+      const odd = it.findIndex((_, i) => !pair.includes(i)); await cells.nth(odd).click(); await cells.nth(pair[0]).click(); await page.waitForTimeout(150); if (r === 0) await shot(`${n_}-wrong`);
+      await cells.nth(pair[0]).click(); await cells.nth(pair[1]).click(); await page.waitForTimeout(300);
+      if (r === g.rounds.length - 1) await shot(`${n_}-done`); await next();
     }
   } else throw new Error("nepoznata igra " + g.type);
 }
