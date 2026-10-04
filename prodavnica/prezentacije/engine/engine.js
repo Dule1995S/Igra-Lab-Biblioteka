@@ -16,7 +16,9 @@
 
   var BADGE = (STORY.steps.filter(function (s) { return s.game.type === "stickers"; })[0] || {}).game || null;
   function newBadge() { return { color: BADGE && BADGE.colors ? BADGE.colors[0] : null, slots: BADGE ? BADGE.slots.map(function () { return null; }) : [] }; }
-  var S = { name: "", done: STORY.steps.map(function () { return false; }), reached: 0, muted: false, badge: newBadge() };
+  var S = { name: "", done: STORY.steps.map(function () { return false; }), reached: 0, muted: false, badge: newBadge(), magic: STORY.magic ? STORY.magic.word.split("").map(function () { return ""; }) : [] };
+  var magicEl = document.getElementById("magic");
+  var ALPHA = ["А","Б","В","Г","Д","Ђ","Е","Ж","З","И","Ј","К","Л","Љ","М","Н","Њ","О","П","Р","С","Т","Ћ","У","Ф","Х","Ц","Ч","Џ","Ш"];
 
   /* ---------- pomoćne ---------- */
   function h(tag, attrs) {
@@ -113,9 +115,35 @@
     finish: function (msg, idx) {
       S.done[idx] = true; S.reached = Math.max(S.reached, idx + 1);
       renderPills(idx); SND.win(); say(msg);
-      nextAction("Даље ➜", function () { go(2 + idx + 1); });
+      var st = STORY.steps[idx];
+      if (STORY.magic && st.reward) showReward(st, idx);
+      else nextAction("Даље ➜", function () { go(2 + idx + 1); });
     }
   };
+
+  function renderMagic() {
+    magicEl.textContent = "";
+    if (!STORY.magic) return;
+    S.magic.forEach(function (L) { magicEl.appendChild(h("b", { class: L ? "on" : "", text: L })); });
+  }
+  function revealLetter(st) { S.magic[st.slot] = STORY.magic.word.charAt(st.slot); renderMagic(); }
+  function showReward(st, idx) {
+    var next = function () { nextAction("Даље ➜", function () { go(2 + idx + 1); }); };
+    if (st.reward.letter) { revealLetter(st); say("Слово је " + st.reward.letter + "! Оно иде у чаробну реч горе."); next(); return; }
+    var grid = h("div", { class: "alpha" });
+    var ov = h("div", { class: "reward" }, h("div", { class: "rw-t", text: "Добио си број " + st.reward.number + "!" }),
+      h("div", { class: "rw-s", text: "Нађи у азбуци слово са тим бројем и додирни га." }), grid);
+    ALPHA.forEach(function (L, i) {
+      var b = h("button", { class: "al", "data-n": String(i + 1), "aria-label": "слово " + L + ", број " + (i + 1) }, h("b", { text: L }), h("small", { text: String(i + 1) }));
+      b.onclick = function () {
+        if (i + 1 === st.reward.number) {
+          SND.ok(); ov.remove(); revealLetter(st); burst(1000, 40, 24); say("Слово је " + L + "! Оно иде у чаробну реч горе."); next();
+        } else { SND.no(); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); say("То није број " + st.reward.number + ". Бројимо: А је 1, Б је 2, В је 3..."); }
+      };
+      grid.appendChild(b);
+    });
+    scene.appendChild(ov);
+  }
 
   /* ---------- scene ---------- */
   var order = ["title", "name"].concat(STORY.steps.map(function (s, i) { return i; }), ["finale", "parents"]);
@@ -128,6 +156,7 @@
     var theme = typeof key === "number" ? STORY.steps[key].theme : themes[key] || "cream";
     stage.dataset.theme = theme;
     bar.hidden = key === "title" || key === "name";
+    renderMagic();
     skipBtn.hidden = typeof key !== "number";
     liskoEl.hidden = key === "title";
     if (typeof key === "number") {
@@ -164,7 +193,7 @@
   }
 
   function nameScene() {
-    say("Ја сам Лиско. Помози ми да стигнем до круне! А како се ти зовеш?");
+    say(STORY.nameMsg || "Ја сам Лиско и заједно ћемо кроз ову причу. А како се ти зовеш?");
     var inp = h("input", { type: "text", maxlength: "16", placeholder: "име", "aria-label": "Име", autocomplete: "off" });
     function ok() { S.name = inp.value.trim().replace(/[<>&]/g, ""); SND.tap(); go(2); }
     inp.addEventListener("keydown", function (e) { if (e.key === "Enter") ok(); });
@@ -638,25 +667,282 @@
     redraw();
   };
 
+  /* ---------- zaključivanje (Mali detektiv) ---------- */
+  function roundHead(p, R, r) {
+    return h("div", { class: "stage-title" }, h("div", { class: "title-pill", text: R.title || p.title }),
+      p.rounds.length > 1 ? h("div", { class: "rounddots" }, p.rounds.map(function (_, i) { return h("b", { class: i <= r ? "on" : "" }); })) : null);
+  }
+  function cluesPanel(list) {
+    var ol = h("ol", { class: "clues" });
+    list.forEach(function (t) {
+      var li = h("li", { tabindex: "0", role: "button" }, h("span", { text: typeof t === "string" ? t : t.text }));
+      li.onclick = function () { li.classList.toggle("done"); SND.tap(); };
+      li.onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } };
+      ol.appendChild(li);
+    });
+    return h("div", { class: "cluebox" }, h("h3", { text: "ТРАГОВИ" }), ol, h("div", { class: "cluehint", text: "додирни траг кад га искористиш" }));
+  }
+  function rowsDone(r, p, R, c, idx, fact) {
+    if (r < p.rounds.length - 1) { c.say(fact); return false; }
+    c.finish(fact + (p.bonus ? " " + p.bonus : ""), idx); return true;
+  }
+
+  // Imena i tragovi: dodeli imena slikama po redu (sleva nadesno)
+  GAMES.assign = function (root, p, c, idx) {
+    var r = 0;
+    function round() {
+      var R = p.rounds[r], n = R.slots.length, got = R.slots.map(function () { return -1; }), sel = -1, done = false;
+      root.textContent = ""; nextBtn.hidden = true; root.classList.add("assign-scene");
+      root.appendChild(roundHead(p, R, r));
+      var slotEls = [], chipEls = [];
+      var slotsEl = h("div", { class: "as-slots s" + n }), chipsEl = h("div", { class: "as-chips" });
+      var check = h("button", { class: "big-btn as-check", text: "ПРОВЕРИ ✓", hidden: "" });
+      R.slots.forEach(function (k, i) {
+        var line = h("div", { class: "as-line" }), pos = h("div", { class: "as-pos", text: String(i + 1) });
+        var b = h("button", { class: "as-slot", "aria-label": "место " + (i + 1) }, pos, img(k), line);
+        b.onclick = function () {
+          if (done) return;
+          if (sel >= 0) { got[i] = sel; sel = -1; SND.tap(); }
+          else if (got[i] >= 0) { got[i] = -1; SND.tap(); }
+          paint();
+        };
+        slotEls.push({ b: b, line: line }); slotsEl.appendChild(b);
+      });
+      R.names.forEach(function (nm, k) {
+        var ch = h("button", { class: "nm-chip", text: nm });
+        ch.onclick = function () {
+          if (done) return;
+          var at = got.indexOf(k);
+          if (at >= 0) { got[at] = -1; sel = k; } else sel = sel === k ? -1 : k;
+          SND.tap(); paint();
+        };
+        chipEls.push(ch); chipsEl.appendChild(ch);
+      });
+      function paint() {
+        slotEls.forEach(function (s, i) { s.line.textContent = got[i] >= 0 ? R.names[got[i]] : ""; s.b.classList.toggle("has", got[i] >= 0); });
+        chipEls.forEach(function (ch, k) { ch.classList.toggle("used", got.indexOf(k) >= 0); ch.classList.toggle("sel", sel === k); });
+        check.hidden = got.indexOf(-1) >= 0 || done;
+      }
+      check.onclick = function () {
+        var ok = got.every(function (v, i) { return v === R.solution[i]; });
+        if (ok) {
+          done = true; c.snd.ok(); paint(); slotEls.forEach(function (s) { s.b.classList.add("right"); }); c.burst(slotsEl, 26);
+          if (rowsDone(r, p, R, c, idx, R.fact)) return;
+          c.next("Даље ➜", function () { r++; round(); });
+        } else {
+          c.snd.no(); slotEls.forEach(function (s) { s.b.classList.remove("shake"); void s.b.offsetWidth; s.b.classList.add("shake"); }); c.say(p.hint);
+        }
+      };
+      root.appendChild(slotsEl); root.appendChild(h("div", { class: "as-note", text: R.note || "Слике броји с лева на десно." }));
+      root.appendChild(chipsEl); root.appendChild(check); root.appendChild(cluesPanel(R.clues));
+      paint(); c.say(r === 0 ? p.intro || "" : p.again);
+    }
+    round();
+  };
+
+  // Tabela: ✕ gde ne može, ✓ gde mora
+  GAMES.table = function (root, p, c, idx) {
+    var r = 0;
+    function round() {
+      var R = p.rounds[r], done = false, lastConflict = "";
+      var st = R.tables.map(function () { return R.rows.map(function () { return R.tables[0].cols.map(function () { return 0; }); }); });
+      st = R.tables.map(function (T) { return R.rows.map(function () { return T.cols.map(function () { return 0; }); }); });
+      root.textContent = ""; nextBtn.hidden = true; root.classList.add("table-scene");
+      root.appendChild(roundHead(p, R, r));
+      var wrap = h("div", { class: "tables t" + R.tables.length }), cells = [];
+      R.tables.forEach(function (T, ti) {
+        var tb = h("table", { class: "dt c" + T.cols.length }), head = h("tr", null, h("th", { class: "corner", text: T.title || "" }));
+        T.cols.forEach(function (col) { head.appendChild(h("th", { class: "colh" }, col.t ? h("span", { text: col.t }) : img(col.k, { alt: N(col.k) }))); });
+        tb.appendChild(head); cells[ti] = [];
+        R.rows.forEach(function (nm, ri) {
+          var tr = h("tr", null, h("th", { class: "rowh", text: nm })); cells[ti][ri] = [];
+          T.cols.forEach(function (_, ci) {
+            var b = h("button", { class: "cell0", "aria-label": nm + ", колона " + (ci + 1) + ": празно" });
+            b.onclick = function () { if (done) return; st[ti][ri][ci] = (st[ti][ri][ci] + 1) % 3; SND.tap(); redraw(); verify(ti, ri, ci); };
+            cells[ti][ri][ci] = b; tr.appendChild(h("td", null, b));
+          });
+          tb.appendChild(tr);
+        });
+        wrap.appendChild(tb);
+      });
+      root.appendChild(wrap); root.appendChild(cluesPanel(R.clues));
+      function redraw() {
+        st.forEach(function (T, ti) { T.forEach(function (row, ri) { row.forEach(function (v, ci) {
+          var b = cells[ti][ri][ci]; b.textContent = v === 1 ? "✕" : v === 2 ? "✓" : ""; b.className = "cell0" + (v === 1 ? " x" : v === 2 ? " v" : "");
+        }); }); });
+      }
+      function verify(ti, ri, ci) {
+        var T = st[ti], msg = "";
+        if (T[ri][ci] === 2) {
+          var rowN = T[ri].filter(function (v) { return v === 2; }).length, colN = T.filter(function (row) { return row[ci] === 2; }).length;
+          if (rowN > 1 || colN > 1) msg = p.conflict;
+        }
+        if (msg) { c.snd.no(); cells[ti][ri][ci].classList.add("shake"); if (lastConflict !== msg) c.say(msg); lastConflict = msg; return; }
+        lastConflict = "";
+        var all = st.every(function (T2, t2) { return T2.every(function (row, r2) { return row.every(function (v, c2) { return (v === 2) === (R.solution[t2][r2] === c2); }); }); });
+        if (all) {
+          done = true; c.snd.ok(); c.burst(wrap, 28);
+          if (rowsDone(r, p, R, c, idx, R.fact)) return;
+          c.next("Даље ➜", function () { r++; round(); });
+        }
+      }
+      c.say(r === 0 ? p.intro || "" : p.again);
+    }
+    round();
+  };
+
+  // Bojenje po tragovima
+  var COL = { red: "#e4553f", blue: "#3f7cb8", yellow: "#f0b429", green: "#5aa24a" };
+  var COLNAME = { red: "црвена", blue: "плава", yellow: "жута", green: "зелена" };
+  var PS = 'stroke="#3a1a14" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+  function rays(cx, cy, r1, r2) { var s = ""; for (var i = 0; i < 12; i++) { var a = i * Math.PI / 6; s += '<line x1="' + (cx + Math.cos(a) * r1).toFixed(1) + '" y1="' + (cy + Math.sin(a) * r1).toFixed(1) + '" x2="' + (cx + Math.cos(a) * r2).toFixed(1) + '" y2="' + (cy + Math.sin(a) * r2).toFixed(1) + '" ' + PS + '/>'; } return s; }
+  var SHAPES = {
+    sun: function () { return { w: 140, h: 140, svg: rays(70, 70, 44, 64) + '<circle class="f" cx="70" cy="70" r="38" fill="#fff" ' + PS + '/>' }; },
+    house: function () { return { w: 170, h: 160, svg: '<path class="f" fill="#fff" ' + PS + ' d="M10 80 L85 12 L160 80 L146 80 L146 150 L24 150 L24 80 Z"/><rect x="72" y="98" width="30" height="52" fill="#fff" ' + PS + '/><rect x="34" y="94" width="26" height="26" fill="#fff" ' + PS + '/><rect x="112" y="94" width="26" height="26" fill="#fff" ' + PS + '/>' }; },
+    tree: function () { return { w: 140, h: 210, svg: '<rect x="56" y="120" width="28" height="86" fill="#b98a5a" ' + PS + '/><circle class="f" cx="70" cy="70" r="60" fill="#fff" ' + PS + '/>' }; },
+    flower: function () { return { w: 110, h: 180, svg: '<path d="M55 90 V176" fill="none" stroke="#3b8a3a" stroke-width="8" stroke-linecap="round"/><path d="M55 140 q-30 -8 -34 -30 q26 2 34 30z" fill="#7fc36a" ' + PS + '/>' + [0, 1, 2, 3, 4].map(function (i) { var a = i * 1.2566 - 1.57; return '<circle class="f" cx="' + (55 + Math.cos(a) * 28).toFixed(1) + '" cy="' + (52 + Math.sin(a) * 28).toFixed(1) + '" r="20" fill="#fff" ' + PS + '/>'; }).join("") + '<circle cx="55" cy="52" r="14" fill="#fff" ' + PS + '/>' }; },
+    balloon: function () { return { w: 100, h: 190, svg: '<path d="M50 112 q-10 14 4 28 q12 14 -2 44" fill="none" ' + PS + '/><path class="f" fill="#fff" ' + PS + ' d="M50 108 C10 100 4 60 18 34 C32 8 68 8 82 34 C96 60 90 100 50 108 Z"/>' }; },
+    cube: function () { return { w: 120, h: 120, svg: '<rect class="f" x="8" y="8" width="104" height="104" rx="14" fill="#fff" ' + PS + '/><path d="M28 30 h22" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".0"/>' }; },
+    win: function () { return { w: 108, h: 108, svg: '<rect class="f" x="6" y="6" width="96" height="96" rx="6" fill="#fff" ' + PS + '/><path d="M54 6 V102 M6 54 H102" fill="none" ' + PS + '/>' }; },
+    fish: function (o) { return { w: 180, h: 110, svg: '<path class="f" fill="#fff" ' + PS + ' d="M10 55 C30 14 100 8 130 52 C100 98 30 96 10 55 Z"/><path class="f" fill="#fff" ' + PS + ' d="M128 54 L172 18 L172 90 Z"/>' + (o.stripes ? '<path d="M50 20 q-10 34 0 70 M76 14 q-10 40 0 82 M102 20 q-8 34 0 64" fill="none" ' + PS + '/>' : "") + (o.dots ? '<circle cx="50" cy="44" r="6" fill="#3a1a14"/><circle cx="80" cy="64" r="6" fill="#3a1a14"/><circle cx="100" cy="40" r="6" fill="#3a1a14"/>' : "") + '<circle cx="34" cy="48" r="5.5" fill="#3a1a14"/>' }; },
+  };
+  GAMES.paint = function (root, p, c, idx) {
+    var r = 0;
+    function round() {
+      var R = p.rounds[r], pal = R.palette || ["red", "blue", "yellow", "green"], cur = null, done = false, filled = {};
+      root.textContent = ""; nextBtn.hidden = true; root.classList.add("paint-scene");
+      root.appendChild(roundHead(p, R, r));
+      var svg = svgEl("svg", { viewBox: "0 0 760 420", class: "paint-svg" });
+      svg.appendChild(svgEl("rect", { x: 0, y: 0, width: 760, height: 420, rx: 24, fill: "#fff", stroke: "#3a1a14", "stroke-width": 5 }));
+      if (R.ground) svg.appendChild(svgEl("line", { x1: 30, y1: R.ground, x2: 730, y2: R.ground, stroke: "#3a1a14", "stroke-width": 5, "stroke-linecap": "round" }));
+      var gEls = {};
+      R.shapes.forEach(function (S2) {
+        var D = SHAPES[S2.type](S2), g = svgEl("g", { transform: "translate(" + S2.x + "," + S2.y + ") scale(" + (S2.s || 1) + ")", class: "pshape", tabindex: "0", role: "button", "aria-label": S2.label || S2.type });
+        g.innerHTML = D.svg + '<rect x="-6" y="-6" width="' + (D.w + 12) + '" height="' + (D.h + 12) + '" fill="transparent"/>';
+        function paintIt() {
+          if (done) return;
+          if (!cur) { c.say(p.pick); return; }
+          Array.prototype.forEach.call(g.querySelectorAll(".f"), function (e) { e.setAttribute("fill", COL[cur]); });
+          filled[S2.id] = cur; SND.tap(); check();
+        }
+        g.addEventListener("click", paintIt); g.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); paintIt(); } });
+        gEls[S2.id] = g; svg.appendChild(g);
+      });
+      var crayons = h("div", { class: "crayons" });
+      pal.forEach(function (k) {
+        var b = h("button", { class: "crayon", style: "--c:" + COL[k], "aria-pressed": "false", "aria-label": COLNAME[k] + " боја" });
+        b.onclick = function () { cur = k; SND.tap(); Array.prototype.forEach.call(crayons.children, function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); };
+        crayons.appendChild(b);
+      });
+      function check() {
+        if (R.shapes.some(function (S2) { return !filled[S2.id]; })) return;
+        var ok = R.shapes.every(function (S2) { return filled[S2.id] === R.solution[S2.id]; });
+        if (ok) {
+          done = true; c.snd.ok(); c.burst(svg, 30);
+          if (rowsDone(r, p, R, c, idx, R.fact)) return;
+          c.next("Даље ➜", function () { r++; round(); });
+        } else { c.snd.no(); svg.classList.remove("shake"); void svg.getBoundingClientRect(); svg.classList.add("shake"); c.say(p.hint); }
+      }
+      root.appendChild(svg); root.appendChild(h("div", { class: "palette" }, h("h3", { text: "БОЈИЦЕ" }), crayons));
+      root.appendChild(cluesPanel(R.clues));
+      c.say(r === 0 ? p.intro || "" : p.again);
+    }
+    round();
+  };
+
+  // Precrtavanje: svaki trag izbaci tačno one koji se ne slažu
+  GAMES.eliminate = function (root, p, c, idx) {
+    var r = 0;
+    function round() {
+      var R = p.rounds[r], alive = R.animals.map(function () { return true; }), step = 0, finished = false;
+      root.textContent = ""; nextBtn.hidden = true; root.classList.add("elim-scene");
+      root.appendChild(roundHead(p, R, r));
+      var strip = h("div", { class: "clue-strip" }), cards = h("div", { class: "elim-cards n" + R.animals.length }), btns = [];
+      function fails(a, cl) { var has = a.traits.indexOf(cl.trait) >= 0; return cl.has ? !has : has; }
+      function showClue() { strip.textContent = ""; strip.appendChild(h("span", { class: "cs-n", text: "Траг " + (step + 1) + " од " + R.clues.length })); strip.appendChild(h("span", { class: "cs-t", text: R.clues[step].text })); }
+      R.animals.forEach(function (a, i) {
+        var b = h("button", { class: "card elim", "aria-label": N(a.key) }, img(a.key), h("div", { class: "nm", text: R.hideNames ? "" : N(a.key) }), h("span", { class: "xx", text: "✕" }));
+        b.onclick = function () {
+          if (finished || !alive[i]) return;
+          var cl = R.clues[step];
+          if (fails(a, cl)) {
+            alive[i] = false; b.classList.add("out"); c.snd.tap();
+            var left = R.animals.some(function (a2, j) { return alive[j] && fails(a2, cl); });
+            if (!left) {
+              step++;
+              if (step >= R.clues.length) {
+                finished = true; c.snd.ok();
+                btns.forEach(function (x, j) { if (alive[j]) x.classList.add("right"); }); c.burst(cards, 26);
+                if (rowsDone(r, p, R, c, idx, R.fact)) return;
+                c.next("Даље ➜", function () { r++; round(); });
+              } else { c.say(p.stepOk); showClue(); }
+            }
+          } else { c.snd.no(); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); c.say(p.hint); }
+        };
+        btns.push(b); cards.appendChild(b);
+      });
+      root.appendChild(strip); root.appendChild(cards); showClue();
+      c.say(r === 0 ? p.intro || "" : p.again);
+    }
+    round();
+  };
+
+  // Brojevi: jednačina sa slikama ili piramida; bira se broj koji fali
+  GAMES.numq = function (root, p, c, idx) {
+    var r = 0;
+    function tok(t) {
+      if (t.img) return img(t.img, { class: "tk-img", style: t.s ? "height:" + t.s + "px" : "" });
+      if (t.t) return h("span", { class: "tk-t", text: t.t });
+      if (t.n != null) return h("span", { class: "tk-n", text: String(t.n) });
+      if (t.b != null) return h("span", { class: "brick", text: String(t.b) });
+      if (t.bq) return h("span", { class: "brick q", text: "?" });
+      return h("span", { class: "tk-q", text: "?" });
+    }
+    function round() {
+      var R = p.rounds[r]; root.textContent = ""; nextBtn.hidden = true; root.classList.add("numq-scene");
+      root.appendChild(roundHead(p, R, r));
+      var board = h("div", { class: "nboard " + (R.style || "eq") }), qEls = [];
+      R.rows.forEach(function (row) { var line = h("div", { class: "nrow" }); row.forEach(function (t) { var e = tok(t); if (t.q || t.bq) qEls.push(e); line.appendChild(e); }); board.appendChild(line); });
+      var keys = h("div", { class: "nkeys" }), done = false;
+      R.choices.forEach(function (v) {
+        var b = h("button", { class: "nkey", text: String(v) });
+        b.onclick = function () {
+          if (done) return;
+          if (v === R.answer) {
+            done = true; c.snd.ok(); qEls.forEach(function (e) { e.textContent = String(v); e.classList.add("ok"); }); b.classList.add("right"); c.burst(board, 24);
+            if (rowsDone(r, p, R, c, idx, R.fact)) return;
+            c.next("Даље ➜", function () { r++; round(); });
+          } else { c.snd.no(); b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake", "wrong"); c.say(p.hint); }
+        };
+        keys.appendChild(b);
+      });
+      root.appendChild(board); root.appendChild(h("div", { class: "nask", text: R.ask || "Који број иде на место питања?" })); root.appendChild(keys);
+      c.say(r === 0 ? p.intro || "" : p.again);
+    }
+    round();
+  };
+
   /* ---------- finale ---------- */
   function finale() {
     var s = h("div", { class: "finale-scene" });
     if (BADGE) { var shield = badgeSVG(BADGE, S.badge, false); shield.style.cssText = "position:absolute;left:130px;top:84px;width:300px;height:360px"; s.appendChild(shield); }
     else { var cv = img("cover", { alt: STORY.title }); cv.style.cssText = "position:absolute;left:120px;top:70px;height:370px;border-radius:22px;border:5px solid #e3b8a4;box-shadow:0 8px 0 rgba(58,26,20,.15);transform:rotate(-2deg)"; s.appendChild(cv); }
     s.appendChild(h("div", { class: "who", text: S.name || "храбро дете" }));
+    if (STORY.magic) s.appendChild(h("div", { class: "magicrow" }, STORY.magic.word.split("").map(function (L) { return h("b", { text: L }); })));
     var stairs = h("div", { class: "stairs" }); s.appendChild(stairs);
-    var crown = img(STORY.finaleIcon || "kruna", { class: "crown", alt: "" }); crown.style.left = "1090px"; crown.style.top = "74px"; s.appendChild(crown);
+    var crown = img(STORY.finaleIcon || "kruna", { class: "crown", alt: "" }); crown.style.left = "1090px"; crown.style.top = "74px";
+    if (STORY.finaleBox) { crown.style.maxWidth = STORY.finaleBox[0] + "px"; crown.style.maxHeight = STORY.finaleBox[1] + "px"; crown.style.left = "1120px"; crown.style.top = "64px"; } s.appendChild(crown);
     var steps = STORY.steps.map(function (st, i) {
       var d = h("div", { class: "stair", style: "--c:" + st.color }, st.label, h("span", { class: "box" }));
       d.style.left = 520 + i * 72 + "px"; d.style.top = 520 - i * 70 + "px"; stairs.appendChild(d); return d;
     });
-    s.appendChild(h("div", { class: "finale-actions" }, h("button", { class: "big-btn", text: "ЗА РОДИТЕЉА ➜", onclick: function () { SND.tap(); go(order.length - 1); } }), h("button", { class: "big-btn alt", text: "ИГРАЈ ПОНОВО", onclick: function () { S.done = S.done.map(function () { return false; }); S.reached = 0; S.badge = newBadge(); go(2); } })));
+    s.appendChild(h("div", { class: "finale-actions" }, h("button", { class: "big-btn", text: "ЗА РОДИТЕЉА ➜", onclick: function () { SND.tap(); go(order.length - 1); } }), h("button", { class: "big-btn alt", text: "ИГРАЈ ПОНОВО", onclick: function () { S.done = S.done.map(function () { return false; }); S.reached = 0; S.badge = newBadge(); S.magic = S.magic.map(function () { return ""; }); go(2); } })));
     scene.appendChild(s);
     say(who(STORY.finaleMsg));
     steps.forEach(function (d, i) {
       setTimeout(function () { d.classList.add("show"); setTimeout(function () { d.querySelector(".box").textContent = "★"; SND.tap(); }, 250); }, 500 + i * 420);
     });
-    setTimeout(function () { crown.classList.add("lit"); SND.win(); burst(1145, 140, 40); }, 500 + steps.length * 420 + 300);
+    setTimeout(function () { crown.classList.add("lit"); if (STORY.finaleIconLit) crown.src = A(STORY.finaleIconLit); SND.win(); burst(1145, 140, 40); }, 500 + steps.length * 420 + 300);
   }
 
   /* ---------- za roditelje ---------- */
@@ -698,7 +984,7 @@
   else fsBtn.hidden = true;
   skipBtn.onclick = function () {
     var key = order[cur];
-    if (typeof key === "number") { S.done[key] = true; S.reached = Math.max(S.reached, key + 1); go(cur + 1); }
+    if (typeof key === "number") { S.done[key] = true; S.reached = Math.max(S.reached, key + 1); if (STORY.magic && STORY.steps[key].slot != null) revealLetter(STORY.steps[key]); go(cur + 1); }
   };
 
   go(0);

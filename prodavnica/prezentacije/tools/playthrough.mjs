@@ -21,7 +21,17 @@ page.on("request", (r) => { if (!/^(file|data|blob):/.test(r.url())) errs.push("
 await page.goto("file://" + join(here, "..", "dist", slug + ".html"));
 await page.waitForTimeout(500);
 const shot = (n) => page.screenshot({ path: join(out, n + ".png") });
-const next = async () => { await page.waitForSelector("#nextBtn:not([hidden])", { timeout: 4000 }); await page.click("#nextBtn", { force: true }); await page.waitForTimeout(250); };
+let curI = 0;
+const next = async () => {
+  const rw = story.steps[curI] && story.steps[curI].reward;
+  if (rw && rw.number && (await page.locator(".reward").count())) {
+    const wrong = rw.number === 1 ? 2 : 1;
+    await page.locator(`.al[data-n="${wrong}"]`).click(); await page.waitForTimeout(150);
+    await shot(`${String(curI + 1).padStart(2, "0")}-reward`);
+    await page.locator(`.al[data-n="${rw.number}"]`).click(); await page.waitForTimeout(250);
+  }
+  await page.waitForSelector("#nextBtn:not([hidden])", { timeout: 4000 }); await page.click("#nextBtn", { force: true }); await page.waitForTimeout(250);
+};
 const story = await page.evaluate(() => STORY);
 
 await shot("00-title");
@@ -34,7 +44,7 @@ async function drag(points, upAfter = true) {
 }
 
 for (let i = 0; i < story.steps.length; i++) {
-  const g = story.steps[i].game, n = String(i + 1).padStart(2, "0");
+  const g = story.steps[i].game, n = String(i + 1).padStart(2, "0"); curI = i;
   await page.waitForTimeout(350);
   await shot(`${n}-${g.type}-start`);
   if (g.type === "odd") {
@@ -111,6 +121,60 @@ for (let i = 0; i < story.steps.length; i++) {
       if ((i + 1) % nn === 0) { await btns.nth(pos).click(); await page.waitForTimeout(120); }
     }
     await page.waitForTimeout(300); await shot(`${n}-done`); await next();
+  } else if (g.type === "assign") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], N = R.slots.length;
+      const fill = async (sol) => { for (let k = 0; k < N; k++) { await page.locator(".nm-chip").nth(sol[k]).click(); await page.locator(".as-slot").nth(k).click(); } };
+      const wrongSol = R.solution.map((_, k) => R.solution[(k + 1) % N]);
+      await fill(wrongSol); await page.locator(".as-check").click(); await page.waitForTimeout(200); if (r === 0) await shot(`${n}-wrong`);
+      for (let k = 0; k < N; k++) await page.locator(".as-slot").nth(k).click();
+      await fill(R.solution); if (r === 0) await shot(`${n}-half`);
+      await page.locator(".as-check").click(); await page.waitForTimeout(300);
+      if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "table") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r];
+      const cell = (t, ri, ci) => page.locator(".dt").nth(t).locator("tr").nth(ri + 1).locator(".cell0").nth(ci);
+      // pogrešan potez: dve kvačice u istom redu
+      const c0 = R.solution[0][0], alt = (c0 + 1) % R.tables[0].cols.length;
+      await cell(0, 0, c0).click(); await cell(0, 0, c0).click(); await cell(0, 0, alt).click(); await cell(0, 0, alt).click(); await page.waitForTimeout(150);
+      if (r === 0) await shot(`${n}-wrong`);
+      await cell(0, 0, alt).click(); // 2 -> 0
+      for (let t = 0; t < R.tables.length; t++) for (let ri = 0; ri < R.rows.length; ri++) {
+        const ci = R.solution[t][ri];
+        if (t === 0 && ri === 0) { if (r === 0) await shot(`${n}-half`); continue; }
+        await cell(t, ri, ci).click(); await cell(t, ri, ci).click();
+      }
+      await page.waitForTimeout(300); if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "paint") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], pal = R.palette || ["red", "blue", "yellow", "green"];
+      const paintAll = async (colorOf) => { for (let k = 0; k < R.shapes.length; k++) { await page.locator(".crayon").nth(pal.indexOf(colorOf(R.shapes[k], k))).click(); await page.locator(".pshape").nth(k).click(); } };
+      await paintAll((S, k) => pal[(pal.indexOf(R.solution[S.id]) + 1) % pal.length]); await page.waitForTimeout(250); if (r === 0) await shot(`${n}-wrong`);
+      await paintAll((S) => R.solution[S.id]); await page.waitForTimeout(300);
+      if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "eliminate") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r]; let alive = R.animals.map((_, i) => i);
+      for (let k = 0; k < R.clues.length; k++) {
+        const cl = R.clues[k], f = (a) => (cl.has ? !a.traits.includes(cl.trait) : a.traits.includes(cl.trait));
+        if (r === 0 && k === 0) { const ok = alive.find((i) => !f(R.animals[i])); await page.locator(".card.elim").nth(ok).click(); await page.waitForTimeout(200); await shot(`${n}-wrong`); }
+        for (const i of alive.filter((i) => f(R.animals[i]))) { await page.locator(".card.elim").nth(i).click(); await page.waitForTimeout(120); }
+        alive = alive.filter((i) => !f(R.animals[i]));
+        if (r === 0 && k === 0) await shot(`${n}-half`);
+      }
+      await page.waitForTimeout(300); if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
+  } else if (g.type === "numq") {
+    for (let r = 0; r < g.rounds.length; r++) {
+      const R = g.rounds[r], wrong = R.choices.find((v) => v !== R.answer);
+      if (r === 0) { await page.locator(".nkey", { hasText: new RegExp("^" + wrong + "$") }).click(); await page.waitForTimeout(200); await shot(`${n}-wrong`); }
+      await page.locator(".nkey", { hasText: new RegExp("^" + R.answer + "$") }).click(); await page.waitForTimeout(300);
+      if (r === g.rounds.length - 1) await shot(`${n}-done`); await next();
+    }
   } else throw new Error("nepoznata igra " + g.type);
 }
 await page.waitForTimeout(4500); await shot("90-finale");

@@ -13,8 +13,13 @@ Svaka knjižica dobija jednu **samostalnu HTML datoteku**: šest kratkih igara (
 | `moj-grad-i-selo.html` | Мој град и село | šta ne pripada (ulica), po putu ili po vodi, šta se gde dobija, traktori po veličini, moja saksija, šta je veće | Под морем | `МЕСТО20` |
 | `pod-morem.html` | Под морем | rakovi po veličini, šta fali u drugom redu, do školjke na dnu, moj greben, šta je veće, pluta ili tone | Технологија око нас | `МОРЕ20` |
 | `tehnologija-oko-nas.html` | Технологија око нас | gde šta stoji (4 korpe), na struju ili na bateriju, ugasi svaki treći ekran, mreža vozila, moj robot, šta je šta zamenilo | Наука код куће | `ТЕХНО20` |
+| `ko-je-to.html` | Мали детектив: Ко је то? | trag po trag (precrtaj), čija je senka, čiji je otisak, ko je iza žbuna, izgubljen ključ, šta je nestalo sa stola | Обој по траговима | `ТРАГ20` |
+| `oboj-po-tragovima.html` | Мали детектив: Обој по траговима | bojenje po tragovima: dvorište, balončići, kocke, ulica, prozori, ribe | Ко је ко? 1 | `БОЈА20` |
+| `ko-je-ko-1.html` | Мали детектив: Ко је ко? 1 | dodeli imena slikama po tragovima: mačke, deca u redu, trka puževa, mala ulica, psi, rođendani | Ко је ко? 2 | `ИМЕНА20` |
+| `ko-je-ko-2.html` | Мали детектив: Ко је ко? 2 | tabela sa Х i kvačicom (jedna i dve tabele): ljubimci, užina, pokloni, trka, ranci, izlet | Тајна зачараног ормана | `ТАБЕЛА20` |
+| `tajna-ormana.html` | Мали детектив: Тајна зачараног ормана | igra bekstva: svaki zadatak daje slovo (ili broj → slovo iz azbuke), a ЗВЕЗДА otvara orman | Ко је ко? 2 | `ЛУПА20` |
 
-Svih devet priča čine krug „sledeće avanture“, pa se svaka završava preporukom druge knjižice. Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
+Priče čine krugove „sledeće avanture“, pa se svaka završava preporukom druge knjižice. Svaka igra se naslanja na stranicu iz knjižice (navedena u ekranu za roditelje), ali nije njena kopija. Činjenice u Liskovim rečenicama su iz same knjižice.
 
 ## Ubacivanje na sajt
 
@@ -57,7 +62,8 @@ Potreban je samo Node 18+. Izlaz je u `dist/`.
    - `tools/cover.sh` iseče ilustraciju sa naslovne strane.
    - Primeri celih postupaka su `stories/*/extract-assets.sh`.
 3. Za svaku celinu izabrati vrstu igre i popuniti podatke.
-4. `node build.mjs <naziv>`, pa proba: `node tools/playthrough.mjs <naziv>` odigra celu priču u pregledaču (Chromium + Playwright), snimi ekrane u `shots/<naziv>` i prijavi greške i spoljne zahteve.
+4. `node tools/verify.mjs <naziv>` proveri da svaki slučaj sa tragovima (imena, tabela, bojenje, precrtavanje) ima TAČNO jedno rešenje, da nijedan trag nije suvišan i da slova nagrade čine čarobnu reč.
+5. `node build.mjs <naziv>`, pa proba: `node tools/playthrough.mjs <naziv>` odigra celu priču u pregledaču (Chromium + Playwright), snimi ekrane u `shots/<naziv>` i prijavi greške i spoljne zahteve.
 
 Vrste igara u `engine/engine.js` (`GAMES`):
 
@@ -74,6 +80,11 @@ Vrste igara u `engine/engine.js` (`GAMES`):
 | `shadow` | Vuče izvor svetla (buktinja, lampa) i gleda kako se menja senka |
 | `missing` | Upoređuje dva reda i bira šta fali u donjem |
 | `nth` | Dodiruje svaku treću (n-tu) sliku u redu |
+| `assign` | Dodeljuje imena slikama po redu (sleva nadesno) prema tragovima |
+| `table` | Popunjava tabelu: Х gde ne može, kvačica gde mora (jedna ili dve tabele) |
+| `paint` | Boji predmete bojicama po tragovima |
+| `eliminate` | Precrtava one koje trag ne dozvoljava; ostaje rešenje |
+| `numq` | Rešava račun sa slikama ili zid od cigli; bira broj koji fali |
 | `stickers` | Slaže svoj znak: boja (neobavezno) i tačno toliko znakova koliko ima mesta (štit, drvo, nošnja, bubamara) |
 
 Nova vrsta igre je jedna funkcija u `GAMES` koja dobija `(root, podaci, ctx, indeks)`. `ctx.say`, `ctx.next`, `ctx.finish` i `ctx.burst` upravljaju oblačićem, dugmetom „Даље“, završetkom koraka i konfetama.
