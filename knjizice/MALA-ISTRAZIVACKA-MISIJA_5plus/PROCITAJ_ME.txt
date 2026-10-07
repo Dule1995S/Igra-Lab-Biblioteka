@@ -1,0 +1,46 @@
+MALA ISTRAŽIVAČKA MISIJA 5+ (redizajn po uzoru na "Boje oko mene 3+")
+Verzija: v03, 2026-10-07
+
+SADRŽAJ FOLDERA
+  FINALNO\IGRALAB_PAH_5PLUS_MALA-ISTRAZIVACKA-MISIJA_COLOR_PRINT-READY_REDIZAJN_v03_2026-10-07.pdf   (20 strana, A4, u boji)
+  FINALNO\katalog.md                 spisak strana, zadataka i tačnih odgovora, i koja stara strana je gde završila
+  FINALNO\pregled_svih_20_strana.png pregled svih strana
+  FINALNO\izvorni-kod\               ceo postupak (gradi.py, verify.py, zadaci.py, brend_izvuci.py, aseti.py, fontovi)
+  ILUSTRACIJE\                       aseti naslova kao providni PNG (izvučeni iz starog PDF-a, bela pozadina uklonjena)
+  STATUS.md                          status i otvorena pitanja
+
+KAKO SE GRADI (Python 3, pip install reportlab pymupdf pillow fonttools numpy)
+  cd FINALNO\izvorni-kod
+  python3 aseti.py STARI.pdf ..\..\ILUSTRACIJE         (samo ako se aseti ponovo vade iz starog PDF-a)
+  python3 brend_izvuci.py "Boje_oko_mene_3.pdf"        (brend.json: logo, Liskova glava, knjiga, piktogrami iz uzora)
+  python3 gradi.py ..\IME.pdf                          (gradi PDF; pada ako crtež nije nacrtan ili je slika odsečena)
+  python3 verify.py ..\IME.pdf                         (strane, A4, fontovi, crtice, zabranjene reči, latinica, broj strane,
+                                                        muški rod, zona 10 mm, dpi, jedan tačan odgovor, nizovi, put, sabiranje)
+  python3 katalog.py ..\katalog.md
+
+KAKO JE PRIMENJENO PRAVILO
+  Ceo stari PDF je pročitan stranu po stranu. Strane samo za odraslog (misija uz odraslog, naše četiri stanice, podelimo posao)
+  spojene su u stranu 2 ZA RODITELJA (pismo, četiri koraka, pravila misije, šta vam treba, podela uloga) i u tablu na strani 3.
+  Strana 3 je tabla u obliku lista sa 5 krugova; pečati sa strane 18 staju tačno u svoje krugove (proverava verify.py).
+  Lisko je samo u logu i u okviru za roditelja, jer aseti već imaju svoje likove (deca, dečak sa zmajem). Lisko je iz vektora uzora, ne generisan.
+  Higgsfield nije korišćen: svi potrebni aseti su već u starom PDF-u.
+
+ŠTA JE MENJANO U SADRŽAJU (po pravilima: jedan tačan odgovor, bez odavanja odgovora)
+  - Strana 7, 8, 9: dodati ponuđeni odgovori sa krugom (nije bilo načina da dete odgovori). Tačan odgovor nije uvek u sredini.
+  - Strana 9 (kamenje): u starom listu je donja slika već pokazivala 6 kamenova, tj. odgovor. Sada se prvo precrtaju dva od osam.
+  - Strana 11 (put): u starom listu su postojala dva puta. Dodat je drugi kamen, pa je put tačno jedan (proverava verify.py).
+  - Strana 12 (plan): cilj više nije imenovan, dete zaokružuje predmet gde je stiglo (mreža od 9 različitih predmeta).
+  - Strana 10 (niz): niz se ponavlja dvaput pre praznog polja; dodat drugi, teži niz (tri predmeta).
+  - Strana 15: slike su izmešane, dete upisuje redosled 1, 2, 3.
+  - Strana 5: dodato pitanje sa tri izbora (boja, oblik, veličina), tačno je veličina.
+  - Strana 6: pločice u neutralnoj boji, da boja ne odaje odgovor.
+  - "Šta bismo još istraživali" je postalo linija "Moje novo pitanje" na diplomi. "Uspomena" je postala diploma sa poljem za omiljeno otkriće.
+
+OTVORENO, MOLIM POTVRDU
+  1. Kod МИСИЈА20 i četiri naslova na klub strani (Mozgalice 4 i 5, Vitezovi i zmajevi, Životinje sveta, Čuvam prirodu) su moj predlog. Nisam imao vaš spisak.
+  2. Spisak zabranjenih reči u verify.py je radni (nemam vaš). Dopunite ZABRANJENO u verify.py.
+  3. Pravila uzrasta za 5+ nisu bila u dokumentu (samo za 3 i 4). Pretpostavio sam kao za 4: VEŽBA i SAD TI na istoj strani, više zadataka po strani.
+  4. Raster aseti su 382 px (iz starog PDF-a), što je dovoljno do oko 6 cm širine na 150 dpi. Veće slike (naslovna, tri slike sa zmajem) su na manjim veličinama.
+  5. Isporuku u IGRA LAB CLAUDE\NN_IME i CLAUDE FINALNO\10 RADNI LISTOVI\<uzrast> nisam mogao da uradim iz oblaka. Ceo folder je ovde, kopirajte ga i dodelite broj NN.
+
+LICENCE: fontovi Comfortaa i Andika su SIL Open Font License (u folderu fontovi).
