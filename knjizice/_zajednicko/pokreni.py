@@ -14,5 +14,10 @@ def main(knjiga_mod, argv):
         provera.katalog(K, os.path.join(K["finalno"], "katalog.md")); return 0
     izlaz = argv[1] if len(argv) > 1 else os.path.join(K["finalno"], K["pdf_ime"])
     bojanka.gradi(K, izlaz)
+    if K.get("stara_naslovna"):                       # naslovna se prenosi tačno iz starog PDF-a (Dušan, 8. 10. 2026)
+        import pymupdf
+        novi, stari = pymupdf.open(izlaz), pymupdf.open(K["stara_naslovna"])
+        novi.delete_page(0); novi.insert_pdf(stari, from_page=0, to_page=0, start_at=0)
+        novi.save(izlaz + ".tmp", garbage=3, deflate=True); novi.close(); os.replace(izlaz + ".tmp", izlaz)
     print("PDF:", izlaz)
     return provera.proveri(izlaz, K)

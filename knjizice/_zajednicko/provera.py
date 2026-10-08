@@ -23,6 +23,7 @@ def proveri(pdf, K):
     if len(d) != 20: g(f"broj strana {len(d)} (treba 20)")
     for i, p in enumerate(d, 1):
         if abs(p.rect.width - A4[0]) > 0.6 or abs(p.rect.height - A4[1]) > 0.6: g(f"strana {i}: nije A4")
+        if i == 1 and K.get("stara_naslovna"): continue   # stara naslovna je zadržana namerno, ne proverava se
         for f in p.get_fonts(full=True):
             if not any(x in f[3] for x in ("Comfortaa", "Andika")): g(f"strana {i}: font {f[3]} nije dozvoljen")
             elif not d.extract_font(f[0])[3]: g(f"strana {i}: font {f[3]} nije ugrađen")
