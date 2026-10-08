@@ -1,0 +1,38 @@
+ЖИВОТИЊЕ РАДЕ СВАШТА 4+ (redizajn po uzoru na "Boje oko mene 3+")
+Verzija: v01, 2026-10-08
+
+SADRŽAJ FOLDERA
+  FINALNO\IGRALAB_PAH_4PLUS_ZIVOTINJE-RADE-SVASTA_COLOR_PRINT-READY_REDIZAJN_v01_2026-10-08.pdf   (20 strana, A4)
+  FINALNO\katalog.md                 strane, celine, tačkice težine, zadatak za doctavanje i stara strana
+  FINALNO\pregled_svih_20_strana.png pregled svih strana
+  FINALNO\izvorni-kod\knjiga.py      podaci knjige (strane, tekstovi, izbor slika); izgled je u knjizice\_zajednicko
+  ILUSTRACIJE\                       linijski crteži na belom (iz starog PDF-a) i obojene verzije *_boja.png za naslovnu, nalepnice i diplomu
+
+KAKO SE GRADI (Python 3, pip install reportlab pymupdf pillow fonttools numpy scipy)
+  cd FINALNO\izvorni-kod
+  python3 gradi.py aseti STARI.pdf     izvuče crteže, proveri da nisu odsečeni, izbroji polja, napravi obojene verzije
+  python3 gradi.py pdf                 izgradi PDF i pokrene proveru (strane, A4, fontovi, crtice, zabranjene reči, latinica,
+                                       broj strane, muški rod, zona 10 mm, do 150 dpi, linijski crteži na belom, Lisko, tačkice, pečati)
+  python3 gradi.py katalog
+
+KAKO JE PRIMENJENO PRAVILO
+  Strana za odraslog (dobrodošlica) je postala strana 2 ZA RODITELJA: pismo, četiri koraka, proba štampe, šta vam treba.
+  Strana 3 je tabla u obliku teme (šapa sa četiri jastučića); pečati sa strane 18 staju tačno u krugove.
+  Svaka strana za bojenje: zaglavlje sa celinom i tačkicama težine, piktogram, kartica SAD TI, linijski crtež na belom,
+  polje „Dodaj svoju ideju“, okvir za roditelja sa knjigom i Liskom, broj strane u krugu.
+  Tačkice težine se računaju iz broja polja za bojenje na slici (trećine unutar knjige): jedna manje polja, tri više.
+  Lisko je samo u logu i u okviru za roditelja, jer crteži već imaju svoje likove (životinje).
+  Stara naslovna i diploma su imale generisanog Liska (raster) i značku 4+; to je zamenjeno. Ilustracija naslovne je
+  napravljena od crteža iz ove knjige (obojena verzija), da sve slike budu iz jednog izvora.
+  Kraj: nalepnice, diploma (naziv knjižice, bez muškog roda), klub strana sa kodom ЖИВОТИЊЕ20 (bez adrese sajta).
+
+IZOSTAVLJENO (da knjiga ostane 20 strana sa tablom, nalepnicama i klubom, ostaje 14 od 17 slika)
+  - stara strana 6: Јеж прави фризуре (два лика и много ситних детаља за узраст 4)
+  - stara strana 10: Пингвин вози ролере (најслабији задатак за доцртавање)
+  - stara strana 18: Пас фотографише (много ситних детаља; стари задатак је био у мушком роду)
+  Crteži izostavljenih strana su u starom PDF-u; dodaju se u knjiga.py ako želite 24 strane.
+
+OTVORENO, MOLIM POTVRDU
+  1. Kod ЖИВОТИЊЕ20 i naslovi za isti uzrast na klub strani su moj predlog (stari kupon je imao drugi kod).
+  2. Spisak zabranjenih reči u _zajednicko\provera.py je radni, nemam vaš.
+  3. Izbor izostavljenih strana (iznad).
