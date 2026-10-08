@@ -6,29 +6,27 @@ SADRŽAJ FOLDERA
   FINALNO\katalog.md                 strane, celine, tačkice težine, rečenica na strani i stara strana
   FINALNO\pregled_svih_20_strana.png pregled svih strana
   FINALNO\izvorni-kod\knjiga.py      podaci knjige; izgled je u knjizice\_zajednicko
-  FINALNO\izvorni-kod\stara_naslovna.pdf   naslovna iz starog PDF-a, prenosi se nepromenjena
-  ILUSTRACIJE\                       linijski crteži na belom (iz starog PDF-a) i obojene verzije *_boja.png za diplomu
+  ILUSTRACIJE\                       linijski crteži na belom, obojene verzije *_boja.png za diplomu i naslovna.png (ilustracija sa stare naslovne)
 
 KAKO SE GRADI (Python 3, pip install reportlab pymupdf pillow fonttools numpy scipy)
   cd FINALNO\izvorni-kod
   python3 gradi.py aseti STARI.pdf     izvuče crteže, proveri da nisu odsečeni, izbroji polja, napravi obojene verzije
-  python3 gradi.py pdf                 izgradi PDF (strana 1 = stara naslovna) i pokrene proveru
+  python3 gradi.py pdf                 izgradi PDF i pokrene proveru
   python3 gradi.py katalog
 
 KAKO JE PRIMENJENO PRAVILO
-  Strana 1: stara naslovna, nepromenjena (Dušan, 8. 10. 2026). Zato se strana 1 ne proverava.
+  Strana 1: naslovna u rasporedu serije (logo, naslov, podnaslov sa uzrastom, okvir, „Ova knjižica je od“), a u okviru je
+  ilustracija sa stare naslovne (Lisko u podmornici), po Dušanovoj želji (8. 10. 2026). Bez značke 4+.
   Strana 2 ZA RODITELJA: pismo, četiri koraka, proba štampe, šta vam treba.
   Strane 3 i 18: prazni listovi na temu (Moj podvodni svet, Još jedna podvodna priča), kao i u starom listu.
   Strane 4 do 17: naslov, rečenica „Oboj …“, veliki linijski crtež na belom, okvir za roditelja sa pitanjem za razgovor.
   Četiri celine (stari list ih nije imao): Morski drugari, Razigrani plivači, Na dnu mora, Podvodne kućice.
-  Tačkice težine iz broja polja za bojenje. Lisko samo u logu i okviru za roditelja (crteži imaju svoje likove).
+  Tačkice težine iz broja polja za bojenje. Lisko: logo, okvir za roditelja i ilustracija naslovne.
   Kraj: diploma i klub strana sa kodom ПОДВОДНИ20 (bez adrese sajta).
 
 IZOSTAVLJENO
   - stara strana 14: Ража у покрету (najmanje poznata životinja za uzrast 4; knjižica ima tačno 14 slika za bojenje)
 
 OTVORENO, MOLIM POTVRDU
-  1. Stara naslovna kaže „15 слика за бојење“, a u knjižici ih je sada 14. Ili vratiti ražu (umesto jedne druge slike),
-     ili ispraviti samo taj red na naslovnoj.
-  2. Stara naslovna ima značku „4+“ i generisanog Liska (raster); ostavljeno je kako ste tražili.
-  3. Kod ПОДВОДНИ20 i naslovi za isti uzrast su moj predlog.
+  1. Ilustracija naslovne je raster sa generisanim Liskom (izuzetak od pravila, po vašoj želji).
+  2. Kod ПОДВОДНИ20 i naslovi za isti uzrast su moj predlog.

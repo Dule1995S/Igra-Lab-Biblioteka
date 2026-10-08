@@ -1,4 +1,4 @@
-"""Podaci knjige: Подводни свет из маште 4+ (redizajn). Naslovna je zadržana iz starog PDF-a (stara_naslovna.pdf)."""
+"""Podaci knjige: Подводни свет из маште 4+ (redizajn). Ilustracija naslovne je sa stare naslovne (Dušan, 8. 10. 2026)."""
 import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 C1, C2, C3, C4 = "МОРСКИ ДРУГАРИ", "РАЗИГРАНИ ПЛИВАЧИ", "НА ДНУ МОРА", "ПОДВОДНЕ КУЋИЦЕ"
@@ -13,8 +13,11 @@ def s(stara, crtez, naslov, roditelj, celina):
     return dict(stara=stara, crtez=crtez, naslov=naslov, podnaslov=PODNASLOVI[crtez], roditelj=roditelj, celina=celina)
 K = dict(
     naziv="Подводни свет из маште", naziv_veliko="ПОДВОДНИ СВЕТ ИЗ МАШТЕ",
-    stara_naslovna=os.path.join(HERE, "stara_naslovna.pdf"),
-    naslov1="ПОДВОДНИ СВЕТ", naslov2="ИЗ МАШТЕ", podnaslov1="", podnaslov2="", tacke=[], naslovna_slike=[],   # naslovna se ne crta (zadržana)
+    naslov1="ПОДВОДНИ СВЕТ", naslov2="ИЗ МАШТЕ",
+    podnaslov1="бојанка за слободно време", podnaslov2="за узраст од 4 године",
+    naslovna_ilustracija="naslovna",
+    tacke=["четрнаест слика за бојење и два празна листа за твоје цртеже", "крупно, једна слика на страни, за игру са одраслим", "штампа се код куће"],
+    naslovna_slike=[],
     pismo=["Урони у подводни свет из маште. Овде чекају весели другари и необичне кућице. Ово су измишљени призори за игру.",
            "У књижици је четрнаест слика у четири целине. Боје бира дете: нема тачних ни погрешних боја.",
            "На странама 3 и 18 су празни листови: дете црта шта жели, на тему књиге. Остале стране су слике за бојење, по једна на страни. Тачкице у углу показују колико поља има слика: једна мање, три више.",
@@ -31,7 +34,7 @@ K = dict(
     diploma_slike=[("ribica_boja", 168, 412, 112), ("hobotnica_boja", 297.6, 412, 118), ("kornjaca_boja", 428, 412, 104)],
     klub_tekst="Подводни свет је сад и ваш. Ако желите још игара за исти узраст, клуб код вам даје попуст на следећу књижицу.",
     kod="ПОДВОДНИ20", isti_uzrast=["ДИНОСАУРУСИ СЕ ИГРАЈУ", "ЖИВОТИЊЕ РАДЕ СВАШТА", "КУЋЕ ИЗ МАШТЕ", "ЛИСКОВЕ СМЕШНЕ МАШИНЕ"],
-    lisko_strane=[],
+    lisko_strane=[1],
     strane=[
         s(3, "ribica", "ВЕСЕЛА РИБИЦА", ["Питајте куда рибица плива."], C1),
         s(4, "kornjaca", "МОРСКА КОРЊАЧА", ["Питајте шта корњача тражи у мору. Оклоп може имати много боја."], C1),

@@ -65,10 +65,19 @@ def naslovna(P, K):
     P.ctext(W / 2, 258, K["podnaslov1"], "Andika", 13, "#4D4D4D")
     P.ctext(W / 2, 277, K["podnaslov2"], "Andika", 13, "#4D4D4D")
     fx, fy, fw, fh = 76.5, 320.3, 442.2, 283.5
-    P.rrect(fx, fy, fw, fh, 14, KREM, "#F3B9A0", 1.3)
-    kompozicija(P, [(ime, fx + fw * cxf, fy + fh * dnof, h) for ime, cxf, dnof, h in K["naslovna_slike"]], (fx, fy, fw, fh))
+    if K.get("naslovna_ilustracija"):                  # jedna gotova ilustracija sa stare naslovne, u belom zaobljenom okviru
+        iw, ih = stil._slika(K["naslovna_ilustracija"]).size; pad = 10
+        fx, fw, fy = 62.0, W - 124.0, 304.0
+        fh = (fw - 2 * pad) * ih / iw + 2 * pad
+        P.rrect(fx, fy, fw, fh, 14, "#FFFFFF", "#F3B9A0", 1.3)
+        P.slika(K["naslovna_ilustracija"], fx + pad, fy + pad, fw - 2 * pad, fh - 2 * pad)
+    else:
+        P.rrect(fx, fy, fw, fh, 14, KREM, "#F3B9A0", 1.3)
+        kompozicija(P, [(ime, fx + fw * cxf, fy + fh * dnof, h) for ime, cxf, dnof, h in K["naslovna_slike"]], (fx, fy, fw, fh))
+    yt = fy + fh + 27
+    if yt + 20 * (len(K["tacke"]) - 1) > 714: raise Greska("naslovna: ilustracija je previsoka")
     for i, t in enumerate(K["tacke"]):
-        P.circle(106, 630 + i * 20 - 4, 2.6, NARANDZASTA); P.text(118, 630 + i * 20, t, "Andika", 11.4, "#4D4D4D")
+        P.circle(106, yt + i * 20 - 4, 2.6, NARANDZASTA); P.text(118, yt + i * 20, t, "Andika", 11.4, "#4D4D4D")
     P.rrect(76.5, 734.2, 442.2, 39.7, 19.85, None, NARANDZASTA, 1.2)
     P.ctext(76.5 + 56, 734.2 + 19.85, "Ова књижица је од:", "Andika", 11, "#4D4D4D")
     P.line(76.5 + 118, 760, 76.5 + 442.2 - 22, 760, "#B8B8B8", 0.8, dash=[1.2, 2.6])

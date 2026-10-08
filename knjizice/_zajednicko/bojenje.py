@@ -43,6 +43,19 @@ def oboji(gray, seme=1):
     alfa = Image.fromarray(np.where(poz, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(0.8))
     return Image.fromarray(np.dstack([rgb, np.asarray(alfa)]), "RGBA")
 
+def naslovna_ilustracija(stari_pdf, izlaz, ime="naslovna"):
+    """Najveća slika sa stare naslovne (gotova ilustracija), sačuvana bez izmena; proverava da nije odsečena."""
+    d = pymupdf.open(stari_pdf); slike = sorted(d[0].get_images(full=True), key=lambda im: -im[2] * im[3])
+    pix = pymupdf.Pixmap(d, slike[0][0])
+    if pix.alpha or pix.n > 3: pix = pymupdf.Pixmap(pymupdf.csRGB, pix)
+    im = Image.frombytes("RGB", (pix.width, pix.height), pix.samples); a = np.asarray(im)
+    t = np.argwhere(a.min(2) < 235); (y0, x0), (y1, x1) = t.min(0), t.max(0); H, W = a.shape[:2]
+    if x0 < 3 or y0 < 3 or x1 > W - 4 or y1 > H - 4: raise SystemExit("ODSEČENO: ilustracija sa naslovne dodiruje ivicu")
+    svetlo = a.min(2) >= 240                                   # skoro bela pozadina povezana sa ivicom postaje čisto bela
+    lab, _ = ndimage.label(svetlo); ivica = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    a = a.copy(); a[np.isin(lab, list(ivica))] = 255
+    Image.fromarray(a).save(os.path.join(izlaz, ime + ".png"), optimize=True); print(f"  {ime:22} naslovna  {W}x{H}")
+
 def pripremi(stari_pdf, mapa, izlaz, kvadrat_min=0):
     """mapa: {broj_strane: ime}. Vraća {ime: broj_polja}."""
     os.makedirs(izlaz, exist_ok=True)
