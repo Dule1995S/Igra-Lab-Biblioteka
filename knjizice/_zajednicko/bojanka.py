@@ -169,13 +169,15 @@ def strana_bojenja(P, K, s):
     zaglavlje(P, s["celina"], s["tacke"])
     naslov(P, "olovka", s["naslov"], s["podnaslov"])
     okvir(P, 152, 718, "САД ТИ", "m_sijalica")
-    x, y, w, h = L + 20, 172, CW - 40, 394                                             # линијски цртеж остаје на белом
-    P.slika(s["crtez"], x, y, w, h)
-    P.line(L + 24, 582, R - 24, 582, SIVA_LINIJA, 0.8, cap=0)
-    P.ctext(W / 2, 602, s["zadatak"], "Andika-Bold", 11, TEKST)
-    if P.sw(s["zadatak"], "Andika-Bold", 11) > CW - 60: raise Greska("zadatak predug: " + s["zadatak"])
-    tackasta(P, L + 24, 616, CW - 48, 88, "ДОДАЈ СВОЈУ ИДЕЈУ", 8.4)
+    P.slika(s["crtez"], L + 22, 176, CW - 44, 524)                                      # линијски цртеж остаје на белом
     roditelj(P, s["roditelj"]); broj_strane(P)
+
+# ------------------------------------------------------------------ prazan list (3 i 18)
+def prazna_strana(P, K, q):
+    zaglavlje(P, "СЛОБОДНО ЦРТАЊЕ")
+    naslov(P, "olovka", q["naslov"], q["podnaslov"])
+    okvir(P, 152, 718, "САД ТИ", "m_sijalica")
+    roditelj(P, q["roditelj"]); broj_strane(P)
 
 # ------------------------------------------------------------------ 18
 def nalepnice(P, K, celine):
@@ -257,9 +259,12 @@ def gradi(K, izlaz, brojevi=None):
     celine = pripremi_strane(K, polja)
     c = canvas.Canvas(izlaz, pagesize=A4, pageCompression=1, initialFontName="Andika", initialFontSize=10)
     c.setTitle(K["naziv"] + " 4+ (IGRA LAB)"); c.setAuthor("IGRA LAB"); c.setSubject("Бојанка за штампу код куће")
-    plan = [(1, lambda P: naslovna(P, K)), (2, lambda P: za_roditelja(P, K)), (3, lambda P: tabla(P, K, celine))]
+    prazne = K.get("prazne")
+    plan = [(1, lambda P: naslovna(P, K)), (2, lambda P: za_roditelja(P, K)),
+            (3, (lambda P: prazna_strana(P, K, prazne[0])) if prazne else (lambda P: tabla(P, K, celine)))]
     for s in K["strane"]: plan.append((s["broj"], (lambda s: lambda P: strana_bojenja(P, K, s))(s)))
-    plan += [(18, lambda P: nalepnice(P, K, celine)), (19, lambda P: diploma(P, K)), (20, lambda P: klub(P, K))]
+    plan += [(18, (lambda P: prazna_strana(P, K, prazne[1])) if prazne else (lambda P: nalepnice(P, K, celine))),
+             (19, lambda P: diploma(P, K)), (20, lambda P: klub(P, K))]
     for n, fn in plan:
         if brojevi and n not in brojevi: continue
         P = Str(c, n); fn(P); P.proveri(); c.showPage()

@@ -67,8 +67,15 @@ def proveri(pdf, K):
     # pečati staju u krugove sa table
     unutra = [dr["rect"].width for dr in d[2].get_drawings() if dr.get("dashes") and "1.6" in str(dr.get("dashes")) and abs(dr["rect"].width - dr["rect"].height) < .1]
     pecati = [dr["rect"].width + dr.get("width", 0) for dr in d[17].get_drawings() if dr.get("width") and abs(dr["width"] - 2.2) < .05 and abs(dr["rect"].width - dr["rect"].height) < .1 and 50 < dr["rect"].width < 70]
-    if len(unutra) != 4 or len(pecati) != 4: g(f"pečati: {len(unutra)} krugova na tabli, {len(pecati)} pečata (treba 4 i 4)")
+    if K.get("prazne"):
+        for i in (3, 18):
+            p = d[i - 1]
+            if p.get_image_info(): g(f"strana {i}: prazan list ne sme da ima sliku")
+            if not any("Comfortaa" in sp["font"] and abs(sp["size"] - 25) < .2 for sp in _spanovi(p)): g(f"strana {i}: prazan list nema naslov")
+    elif len(unutra) != 4 or len(pecati) != 4: g(f"pečati: {len(unutra)} krugova na tabli, {len(pecati)} pečata (treba 4 i 4)")
     elif not all(b <= a - 0.9 <= b + 3.5 for a, b in zip(unutra, pecati)): g("pečat ne staje tačno u krug")
+    for i in range(4, 18):
+        if "ДОДАЈ СВОЈУ ИДЕЈУ" in d[i - 1].get_text(): g(f"strana {i}: ostalo je polje za doctavanje")
     print(f"  strana {len(d)}, provereno: A4, fontovi, crtice, zabranjene reči, latinica, broj strane, muški rod, zona 10 mm, dpi, Lisko, tačkice, pečati")
     if G:
         print(f"GREŠKE ({len(G)}):"); [print(" - " + x) for x in G]; return 1
@@ -77,11 +84,12 @@ def proveri(pdf, K):
 def katalog(K, put):
     polja = json.load(open(os.path.join(K["ilustracije"], "polja.json")))
     import bojanka; bojanka.pripremi_strane(K, polja)
-    out = [f"# Katalog: {K['naziv']} 4+ (redizajn)\n", "| Strana | Naslov | Celina | Težina (polja) | Dodaj svoju ideju | Stara strana |", "|---|---|---|---|---|---|",
-           "| 1 | Naslovna | | | | 1 |", "| 2 | Za roditelja | | | | 2 |", "| 3 | " + K["tabla_naslov"].capitalize() + " (tabla) | | | | novo |"]
+    pr = K["prazne"]
+    out = [f"# Katalog: {K['naziv']} 4+ (redizajn)\n", "| Strana | Naslov | Celina | Težina (polja) | Rečenica na strani | Stara strana |", "|---|---|---|---|---|---|",
+           "| 1 | Naslovna | | | | 1 |", "| 2 | Za roditelja | | | | 2 |", f"| 3 | {pr[0]['naslov']} (prazan list) | | | {pr[0]['podnaslov']} | novo |"]
     for s in K["strane"]:
-        out.append(f"| {s['broj']} | {s['naslov']} | {s['celina']} | {'●' * s['tacke']}{'○' * (3 - s['tacke'])} ({s['polja']}) | {s['zadatak']} | {s['stara']} |")
-    out += ["| 18 | Nalepnice | | | | novo |", "| 19 | Diploma | | | | 20 |", "| 20 | Klub | | | | 20 (kupon) |", "",
+        out.append(f"| {s['broj']} | {s['naslov']} | {s['celina']} | {'●' * s['tacke']}{'○' * (3 - s['tacke'])} ({s['polja']}) | {s['podnaslov']} | {s['stara']} |")
+    out += [f"| 18 | {pr[1]['naslov']} (prazan list) | | | {pr[1]['podnaslov']} | novo |", "| 19 | Diploma | | | | 20 |", "| 20 | Klub | | | | 20 (kupon) |", "",
             "Izostavljene stare strane (da bi knjiga ostala na 20 strana sa tablom, nalepnicama i klubom):", ""]
     out += [f"- strana {n}: {t}" for n, t in K["izostavljeno"]]
     open(put, "w").write("\n".join(out) + "\n")

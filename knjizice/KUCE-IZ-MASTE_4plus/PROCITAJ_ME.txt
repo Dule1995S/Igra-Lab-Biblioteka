@@ -1,9 +1,9 @@
 КУЋЕ ИЗ МАШТЕ 4+ (redizajn po uzoru na "Boje oko mene 3+")
-Verzija: v01, 2026-10-08
+Verzija: v02, 2026-10-08 (izmene po Dušanovom zahtevu)
 
 SADRŽAJ FOLDERA
-  FINALNO\IGRALAB_PAH_4PLUS_KUCE-IZ-MASTE_COLOR_PRINT-READY_REDIZAJN_v01_2026-10-08.pdf   (20 strana, A4)
-  FINALNO\katalog.md                 strane, celine, tačkice težine, zadatak za doctavanje i stara strana
+  FINALNO\IGRALAB_PAH_4PLUS_KUCE-IZ-MASTE_COLOR_PRINT-READY_REDIZAJN_v02_2026-10-08.pdf   (20 strana, A4)
+  FINALNO\katalog.md                 strane, celine, tačkice težine, rečenica na strani i stara strana
   FINALNO\pregled_svih_20_strana.png pregled svih strana
   FINALNO\izvorni-kod\knjiga.py      podaci knjige (strane, tekstovi, izbor slika); izgled je u knjizice\_zajednicko
   ILUSTRACIJE\                       linijski crteži na belom (iz starog PDF-a) i obojene verzije *_boja.png za naslovnu, nalepnice i diplomu
@@ -17,14 +17,15 @@ KAKO SE GRADI (Python 3, pip install reportlab pymupdf pillow fonttools numpy sc
 
 KAKO JE PRIMENJENO PRAVILO
   Strana za odraslog (dobrodošlica) je postala strana 2 ZA RODITELJA: pismo, četiri koraka, proba štampe, šta vam treba.
-  Strana 3 je tabla u obliku teme (kuća sa četiri okrugla prozora); pečati sa strane 18 staju tačno u krugove.
-  Svaka strana za bojenje: zaglavlje sa celinom i tačkicama težine, piktogram, kartica SAD TI, linijski crtež na belom,
-  polje „Dodaj svoju ideju“, okvir za roditelja sa knjigom i Liskom, broj strane u krugu.
+  Strane 3 i 18 su prazni listovi za slobodno crtanje na temu knjige (umesto table i nalepnica, Dušan 8. 10. 2026).
+  Svaka strana za bojenje: zaglavlje sa celinom i tačkicama težine, piktogram, naslov i jedna rečenica „Oboj …“,
+  kartica SAD TI sa velikim linijskim crtežom na belom (bez polja za doctavanje, Dušan 8. 10. 2026), okvir za roditelja
+  sa pitanjem za razgovor, knjigom i Liskom, broj strane u krugu.
   Tačkice težine se računaju iz broja polja za bojenje na slici (trećine unutar knjige): jedna manje polja, tri više.
   Lisko je u logu, u okviru za roditelja, na naslovnoj i na diplomi (crteži nemaju svoje likove). Lisko je iz vektora uzora, ne generisan.
   Stara naslovna i diploma su imale generisanog Liska (raster) i značku 4+; to je zamenjeno. Ilustracija naslovne je
   napravljena od crteža iz ove knjige (obojena verzija), da sve slike budu iz jednog izvora.
-  Kraj: nalepnice, diploma (naziv knjižice, bez muškog roda), klub strana sa kodom КУЋЕ20 (bez adrese sajta).
+  Kraj: diploma (naziv knjižice, bez muškog roda), klub strana sa kodom КУЋЕ20 (bez adrese sajta).
 
 IZOSTAVLJENO (da knjiga ostane 20 strana sa tablom, nalepnicama i klubom, ostaje 14 od 17 slika)
   - stara strana 10: Кућа у књизи (на слици се књига не препознаје)
