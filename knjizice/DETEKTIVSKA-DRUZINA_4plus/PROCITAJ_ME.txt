@@ -1,0 +1,32 @@
+ДЕТЕКТИВСКА ДРУЖИНА 4+ (redizajn po uzoru na "Boje oko mene 3+")
+Verzija: v01, 2026-10-09
+
+SADRŽAJ FOLDERA
+  FINALNO\IGRALAB_PAH_4PLUS_DETEKTIVSKA-DRUZINA_COLOR_PRINT-READY_REDIZAJN_v01_2026-10-09.pdf   (20 strana, A4)
+  FINALNO\katalog.md                 strane, celine, tačkice težine, rečenica na strani i stara strana
+  FINALNO\pregled_svih_20_strana.png pregled svih strana
+  FINALNO\izvorni-kod\knjiga.py      podaci knjige; izgled je u knjizice\_zajednicko
+  ILUSTRACIJE\                       linijski crteži na belom, obojene verzije *_boja.png za diplomu i naslovna.png (ilustracija sa stare naslovne)
+
+KAKO SE GRADI (Python 3, pip install reportlab pymupdf pillow fonttools numpy scipy)
+  cd FINALNO\izvorni-kod
+  python3 gradi.py aseti STARI.pdf     izvuče crteže, proveri da nisu odsečeni, izbroji polja, napravi obojene verzije
+  python3 gradi.py pdf                 izgradi PDF i pokrene proveru
+  python3 gradi.py katalog
+
+KAKO JE PRIMENJENO PRAVILO
+  Strana 1: naslovna u rasporedu serije (logo, naslov, podnaslov sa uzrastom, okvir, „Ova knjižica je od“), a u okviru je
+  ilustracija sa stare naslovne (Lisko i dvoje dece sa lupom), po Dušanovoj želji (8. 10. 2026, kao za Podvodni svet). Bez značke 4+.
+  Strana 2 ZA RODITELJA: pismo, četiri koraka, proba štampe, šta vam treba.
+  Strane 3 i 18: prazni listovi na temu (Moj detektivski kutak, Moja detektivska priča), kao i u starom listu.
+  Strane 4 do 17: naslov, rečenica „Oboj …“, veliki linijski crtež na belom, okvir za roditelja sa pitanjem za razgovor.
+  Četiri celine kao u starom listu: Mali istraživači, U potrazi, Prijateljska priča, Mašta se nastavlja.
+  Tačkice težine iz broja polja za bojenje. Lisko: logo, okvir za roditelja i ilustracija naslovne. Diploma: obojeni crteži predmeta (torba, zeka, golub).
+  Kraj: diploma i klub strana sa kodom ДРУЖИНА20 (bez adrese sajta).
+
+IZOSTAVLJENO
+  - stara strana 10: Необичан пакет (jedina slika bez lika i radnje; knjižica ima tačno 14 slika za bojenje)
+
+OTVORENO, MOLIM POTVRDU
+  1. Ilustracija naslovne je raster sa generisanim Liskom (izuzetak od pravila, po vašoj želji).
+  2. Kod ДРУЖИНА20 i naslovi za isti uzrast su moj predlog.
